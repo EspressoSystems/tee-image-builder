@@ -1,0 +1,9 @@
+sys.enable_sigterm_injection = true
+sys.enable_extra_runtime_domain_names_conf = true
+sgx.nonpie_binary = true
+sgx.enclave_size = "16G"
+sgx.edmm_enable = true
+sgx.allowed_files = ["file:/home/user"]
+sys.experimental__enable_flock = true
+sgx.use_exinfo = true
+sgx.remote_attestation = "dcap"
