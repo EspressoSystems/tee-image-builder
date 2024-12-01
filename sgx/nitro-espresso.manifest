@@ -1,21 +1,3 @@
-# Nitro Manifest
-
-################################# MOUNT FS ####################################
-
-# General notes:
-# - All mount points are mounted using the default 'chroot' type.
-# - `path`: names of directories and files in Gramine environment; they may be
-#           arbitrary but here we mostly reuse host URIs for simplicity (except
-#           for the first `/lib` mount point).
-# - `uri`:  names of directories and files on the host, somewhat confusingly
-#           prepended by the 'file:' keyword.
-
-fs.mounts = [
-    { path = "/home/user/.arbitrum/", uri = "file:.arbitrum" } 
-]
-
-############################### SGX: GENERAL ##################################
-
 sys.enable_sigterm_injection = true
 sys.enable_extra_runtime_domain_names_conf = true
 
@@ -25,6 +7,9 @@ sgx.edmm_enable = true
 sgx.remote_attestation = "dcap"
 sys.experimental__enable_flock = true
 sgx.use_exinfo = true
+fs.mounts = [
+    { path = "/home/user/.arbitrum/", uri = "file:/home/user/.arbitrum" }
+]
 
 ############################# SGX: ALLOWED FILES ###############################
-sgx.allowed_files = ["file:/home/user/"]
+sgx.allowed_files = ["file:/home/user/.arbitrum", "file:/home/user/kzg10-aztec20-srs-1048584.bin"]
