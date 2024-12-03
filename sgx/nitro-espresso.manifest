@@ -8,8 +8,9 @@ sgx.remote_attestation = "dcap"
 sys.experimental__enable_flock = true
 sgx.use_exinfo = true
 fs.mounts = [
-    { path = "/home/user/.arbitrum/", uri = "file:/home/user/.arbitrum" }
+    { path = "/home/user/.arbitrum/", uri = "file:/home/user/.arbitrum" },
+    { path = "/config/", uri = "file:/config" },
+    { path = "/l1keystore/", uri = "file:/l1keystore" }
 ]
 
-############################# SGX: ALLOWED FILES ###############################
-sgx.allowed_files = ["file:/home/user/.arbitrum", "file:/home/user/kzg10-aztec20-srs-1048584.bin"]
+sgx.allowed_files = ["file:/home/user/.arbitrum", "file:/home/user/kzg10-aztec20-srs-1048584.bin", "file:/config", "file:/l1keystore"]
