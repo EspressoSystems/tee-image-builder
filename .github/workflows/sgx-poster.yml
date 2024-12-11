@@ -1,0 +1,83 @@
+name: Build SGX Poster
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/main' && github.run_number) || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sgx-poster:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Save Timestamp
+        run: echo "TIMESTAMP=$(date +%s)" >> ${GITHUB_ENV}
+
+      - uses: actions/checkout@v4
+        name: Checkout Repository
+
+      # Seems to break the build. Figure this out later.
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64,amd64
+
+      - uses: docker/setup-buildx-action@v3
+        name: Setup Docker BuildKit (buildx)
+
+      - uses: docker/login-action@v3
+        name: Login to Github Container Repo
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/metadata-action@v5
+        name: Generate Docker Metadata
+        id: meta
+        with:
+          images: ghcr.io/EspressoSystems/sgx-poster
+
+      - uses: docker/build-push-action@v5
+        name: Build Docker
+        with:
+          context: ./config
+          file: ./config/Dockerfile.sgx-poster
+          platforms: linux/amd64
+          load: true
+          push: false
+          tags: sgx-poster:latest
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Install tools needed for gsc
+        run: sudo apt-get install -y python3 python3-docker python3-jinja2 python3-pip python3-tomli python3-tomli-w python3-yaml
+
+      - name: Move config into place
+        run: cp config.yaml.template config.yaml
+
+      - name: Run gsc build
+        run: ./gsc build sgx-poster ./nitro-espresso.manifest
+
+      - name: Inject Signing Key
+        if: github.event_name != 'pull_request'
+        run: echo "${{ secrets.GSC_SIGNING_KEY }}" > enclave-key.pem
+
+      - name: Run gsc sign image
+        if: github.event_name != 'pull_request'
+        run: ./gsc sign-image sgx-poster enclave-key.pem
+
+      - name: Delete signing key
+        if: github.event_name != 'pull_request'
+        run: rm enclave-key.pem
+
+      - name: Tag Docker
+        if: github.event_name != 'pull_request'
+        run: docker tag gsc-sgx-poster ghcr.io/espressosystems/gsc-sgx-poster:${{ github.ref_name }}-${{ env.TIMESTAMP }}
+
+      - name: Push Docker
+        if: github.event_name != 'pull_request'
+        run: docker push ghcr.io/espressosystems/gsc-sgx-poster:${{ github.ref_name }}-${{ env.TIMESTAMP }}
+
