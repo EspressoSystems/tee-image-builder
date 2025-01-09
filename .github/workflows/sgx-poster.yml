@@ -71,12 +71,15 @@ jobs:
         run: ./gsc build sgx-poster ./nitro-espresso.manifest
 
       - name: Inject Signing Key
+        if: github.event_name != 'pull_request'
         run: echo "${{ secrets.GSC_SIGNING_KEY }}" > enclave-key.pem
 
       - name: Run gsc sign image
+        if: github.event_name != 'pull_request'
         run: ./gsc sign-image sgx-poster enclave-key.pem
 
       - name: Delete signing key
+        if: github.event_name != 'pull_request'
         run: rm enclave-key.pem
 
       - name: Tag Docker
