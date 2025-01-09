@@ -24,7 +24,7 @@ echo "Successfully read attestation report."
 
 # Adjust ownership for the .arbitrum folder to the 'user' inside the container
 if [ -d "/home/user/.arbitrum" ]; then
-   sudo chown -R user:user /home/user/.arbitrum
+   chown -R user:user /home/user/.arbitrum
 fi
 
 # Start Nitro process

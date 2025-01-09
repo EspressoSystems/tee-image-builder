@@ -1,16 +1,14 @@
 sys.enable_sigterm_injection = true
 sys.enable_extra_runtime_domain_names_conf = true
-
-sgx.nonpie_binary = true
-sgx.enclave_size = "16G"
 sgx.edmm_enable = true
 sgx.remote_attestation = "dcap"
-sys.experimental__enable_flock = true
 sgx.use_exinfo = true
+sys.experimental__enable_flock = true
 fs.mounts = [
-    { path = "/home/user/.arbitrum/", uri = "file:/home/user/.arbitrum" },
-    { path = "/config/", uri = "file:/config" },
-    { path = "/l1keystore/", uri = "file:/l1keystore" }
+    { path = "/home/user/.arbitrum/", uri = "file:/home/user/.arbitrum"},
+    { path = "/config/", uri = "file:/config"}
 ]
-
-sgx.allowed_files = ["file:/home/user/.arbitrum", "file:/home/user/kzg10-aztec20-srs-1048584.bin", "file:/config", "file:/l1keystore"]
+sgx.allowed_files = ["file:/home/user/.arbitrum"]
+[[sgx.trusted_files]]
+uri = "file:/home/user/kzg10-aztec20-srs-1048584.bin"
+sha256 = "cded83e82e4b49fee4cb2e0f374f996954fe12548ad39100432ee493069ef09d"

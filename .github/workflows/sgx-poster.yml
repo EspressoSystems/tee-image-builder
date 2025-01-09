@@ -2,6 +2,8 @@ name: Build SGX Poster
 
 on:
   push:
+    branches:
+      - master
   pull_request:
   workflow_dispatch:
 
@@ -58,19 +60,23 @@ jobs:
       - name: Move config into place
         run: cp config.yaml.template config.yaml
 
+      - name: Update Gramine Manifest
+        run: |
+          MANIFEST_PATH="./nitro-espresso.manifest"
+          echo -e '[[sgx.trusted_files]]\nuri = "file:/config/poster_config.json"\nsha256 = "${{ secrets.POSTER_CONFIG_SHA256 }}"\n' >> $MANIFEST_PATH
+        env:
+          POSTER_CONFIG_SHA256: ${{ secrets.POSTER_CONFIG_SHA256 }}
+
       - name: Run gsc build
         run: ./gsc build sgx-poster ./nitro-espresso.manifest
 
       - name: Inject Signing Key
-        if: github.event_name != 'pull_request'
         run: echo "${{ secrets.GSC_SIGNING_KEY }}" > enclave-key.pem
 
       - name: Run gsc sign image
-        if: github.event_name != 'pull_request'
         run: ./gsc sign-image sgx-poster enclave-key.pem
 
       - name: Delete signing key
-        if: github.event_name != 'pull_request'
         run: rm enclave-key.pem
 
       - name: Tag Docker
@@ -80,4 +86,3 @@ jobs:
       - name: Push Docker
         if: github.event_name != 'pull_request'
         run: docker push ghcr.io/espressosystems/gsc-sgx-poster:${{ github.ref_name }}-${{ env.TIMESTAMP }}
-
