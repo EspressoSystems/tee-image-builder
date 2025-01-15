@@ -60,13 +60,6 @@ jobs:
       - name: Move config into place
         run: cp config.yaml.template config.yaml
 
-      - name: Update Gramine Manifest
-        run: |
-          MANIFEST_PATH="./nitro-espresso.manifest"
-          echo -e '[[sgx.trusted_files]]\nuri = "file:/config/poster_config.json"\nsha256 = "${{ secrets.POSTER_CONFIG_SHA256 }}"\n' >> $MANIFEST_PATH
-        env:
-          POSTER_CONFIG_SHA256: ${{ secrets.POSTER_CONFIG_SHA256 }}
-
       - name: Run gsc build
         run: ./gsc build sgx-poster ./nitro-espresso.manifest
 
