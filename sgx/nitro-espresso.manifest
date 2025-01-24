@@ -1,6 +1,7 @@
 sys.enable_extra_runtime_domain_names_conf = true
 sgx.edmm_enable = true
 sgx.remote_attestation = "dcap"
+sgx.use_exinfo = true
 sys.experimental__enable_flock = true
 fs.mounts = [
     { path = "/home/user/.arbitrum/", uri = "file:/home/user/.arbitrum"},
