@@ -1,4 +1,5 @@
-FROM ghcr.io/espressosystems/nitro-espresso-integration/nitro-node:v3.3.2-celestia-5ed9cd8
+ARG BASE_IMAGE=ghcr.io/espressosystems/nitro-espresso-integration/nitro-node:integration
+FROM ${BASE_IMAGE}
 
 RUN curl -L -o kzg10-aztec20-srs-1048584.bin https://github.com/EspressoSystems/ark-srs/releases/download/v0.2.0/kzg10-aztec20-srs-1048584.bin
 

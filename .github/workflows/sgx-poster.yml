@@ -6,17 +6,34 @@ on:
       - master
   pull_request:
   workflow_dispatch:
+    inputs:
+      base_image:
+        description: "Docker image to use for SGX poster"
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      base_image:
+        description: "Docker image to use for SGX poster"
+        required: false
+        type: string
 
 concurrency:
   group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/main' && github.run_number) || github.ref }}
   cancel-in-progress: true
 
+run-name: Build SGX Poster - ${{ inputs.base_image || 'Simple Build' }}
+
 jobs:
   sgx-poster:
     runs-on: ubuntu-24.04
     steps:
-      - name: Save Timestamp
-        run: echo "TIMESTAMP=$(date +%s)" >> ${GITHUB_ENV}
+      - name: Save Base Image and Tag
+        run: |
+          BASE_IMAGE="${{ inputs.base_image || 'ghcr.io/espressosystems/nitro-espresso-integration/nitro-node:v3.3.2-celestia-5ed9cd8' }}"
+          BASE_TAG="${BASE_IMAGE##*:}"
+          echo "BASE_IMAGE=${BASE_IMAGE}" >> ${GITHUB_ENV}
+          echo "BASE_TAG=${BASE_TAG}" >> ${GITHUB_ENV}
 
       - uses: actions/checkout@v4
         name: Checkout Repository
@@ -53,6 +70,8 @@ jobs:
           push: false
           tags: sgx-poster:latest
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BASE_IMAGE=${{ env.BASE_IMAGE }}
 
       - name: Install tools needed for gsc
         run: sudo apt-get install -y python3 python3-docker python3-jinja2 python3-pip python3-tomli python3-tomli-w python3-yaml
@@ -77,8 +96,8 @@ jobs:
 
       - name: Tag Docker
         if: github.event_name != 'pull_request'
-        run: docker tag gsc-sgx-poster ghcr.io/espressosystems/gsc-sgx-poster:${{ github.ref_name }}-${{ env.TIMESTAMP }}
+        run: docker tag gsc-sgx-poster ghcr.io/espressosystems/gsc-sgx-poster:${{ env.BASE_TAG }}
 
       - name: Push Docker
         if: github.event_name != 'pull_request'
-        run: docker push ghcr.io/espressosystems/gsc-sgx-poster:${{ github.ref_name }}-${{ env.TIMESTAMP }}
+        run: docker push ghcr.io/espressosystems/gsc-sgx-poster:${{ env.BASE_TAG }}
