@@ -181,7 +181,7 @@ jobs:
           rm -rf "$BUILDCTX"
 
       - name: Push runner image
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'workflow_dispatch'
         run: docker push "${{ env.EIF_TAG }}"
 
       - name: Summary

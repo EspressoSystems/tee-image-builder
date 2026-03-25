@@ -123,7 +123,7 @@ jobs:
           docker images
 
       - name: Tag Docker
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'workflow_dispatch'
         run: |
           echo "Available Docker images:"
           docker images

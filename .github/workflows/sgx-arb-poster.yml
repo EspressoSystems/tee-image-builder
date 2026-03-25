@@ -88,14 +88,14 @@ jobs:
         run: ./gsc build sgx-poster ../sgx/nitro-espresso.manifest
 
       - name: Sign Image
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'workflow_dispatch'
         run: |
           echo "${{ secrets.GSC_SIGNING_KEY }}" > enclave-key.pem
           ./gsc-tool/gsc sign-image sgx-poster enclave-key.pem
           rm enclave-key.pem
 
       - name: Extract Enclave Info
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'workflow_dispatch'
         run: |
           ./gsc-tool/gsc info-image sgx-arb-poster | python3 -c "
           import sys, tomllib, os
@@ -116,7 +116,7 @@ jobs:
           "
 
       - name: Tag and Push Docker
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'workflow_dispatch'
         run: |
           printf 'FROM sgx-arb-poster\n' | docker build \
             --label "sgx.mrenclave=${{ env.MR_ENCLAVE }}" \
