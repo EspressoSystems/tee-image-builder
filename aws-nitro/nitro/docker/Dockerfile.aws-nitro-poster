@@ -29,7 +29,7 @@ RUN chmod +x /aws-nitro-entrypoint.sh
 
 # Install required packages
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
       socat \
       nfs-common \
       procps \
