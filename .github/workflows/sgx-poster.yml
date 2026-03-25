@@ -3,7 +3,7 @@ name: Build SGX Poster
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
   workflow_dispatch:
     inputs:
@@ -19,7 +19,7 @@ on:
         type: string
 
 concurrency:
-  group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/master' && github.run_number) || github.ref }}
+  group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/main' && github.run_number) || github.ref }}
   cancel-in-progress: true
 
 run-name: Build SGX Poster - ${{ inputs.base_image || 'Simple Build' }}
@@ -57,8 +57,8 @@ jobs:
       - name: Build Docker
         uses: docker/build-push-action@v5
         with:
-          context: ./config
-          file: ./config/Dockerfile.sgx-poster
+          context: ./sgx
+          file: ./sgx/Dockerfile.sgx-poster
           platforms: linux/amd64
           load: true
           push: false
@@ -69,23 +69,36 @@ jobs:
       - name: Install tools needed for gsc
         run: sudo apt-get install -y python3 python3-docker python3-jinja2 python3-pip python3-tomli python3-tomli-w python3-yaml
 
-      - name: Move config into place
-        run: cp config.yaml.template config.yaml
+      - name: Checkout gramineproject/gsc
+        uses: actions/checkout@v4
+        with:
+          repository: gramineproject/gsc
+          ref: v1.8
+          path: gsc-tool
+
+      - name: Apply Espresso template and config
+        run: |
+          # Our entrypoint.manifest.template changes loader.entrypoint → loader.entrypoint.uri
+          # which is required by the Gramine version pinned in sgx/config.yaml.template.
+          cp sgx/templates/debian/entrypoint.manifest.template gsc-tool/templates/debian/entrypoint.manifest.template
+          cp sgx/keys/intel-sgx-deb.key gsc-tool/keys/intel-sgx-deb.key
+          cp sgx/config.yaml.template gsc-tool/config.yaml
 
       - name: Run gsc build
-        run: ./gsc build sgx-poster ./nitro-espresso.manifest
+        working-directory: gsc-tool
+        run: ./gsc build sgx-poster ../sgx/nitro-espresso.manifest
 
       - name: Sign Image
         if: github.event_name != 'pull_request'
         run: |
           echo "${{ secrets.GSC_SIGNING_KEY }}" > enclave-key.pem
-          ./gsc sign-image sgx-poster enclave-key.pem
+          ./gsc-tool/gsc sign-image sgx-poster enclave-key.pem
           rm enclave-key.pem
 
       - name: Extract Enclave Info
         if: github.event_name != 'pull_request'
         run: |
-          ./gsc info-image gsc-sgx-poster | python3 -c "
+          ./gsc-tool/gsc info-image gsc-sgx-poster | python3 -c "
           import sys, tomllib, os
           d = tomllib.loads(sys.stdin.read())
           open(os.environ['GITHUB_ENV'], 'a').write(
