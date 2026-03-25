@@ -69,7 +69,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./aws-nitro
-          file: ./aws-nitro/nitro/docker/Dockerfile.aws-nitro-arb-poster
+          file: ./aws-nitro/nitro/docker/Dockerfile.aws-nitro-poster
           build-args: |
             NITRO_IMAGE_PATH=${{ env.NITRO_IMAGE_PATH }}
             CONFIG_HASH=${{ github.event.inputs.config_hash}}
