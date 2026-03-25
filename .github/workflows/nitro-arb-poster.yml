@@ -35,6 +35,9 @@ run-name: Enclaver Docker Image - ${{ github.event.inputs.nitro_node_image_path 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout code
