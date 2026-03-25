@@ -1,5 +1,5 @@
 ##############################################################################
-# build-eif.yml
+# nitro-op-poster.yml
 #
 # Builds a self-contained AWS Nitro EIF runner image from a published
 # op-batcher-enclave-app image and pushes a single tag to the registry:
@@ -150,7 +150,7 @@ jobs:
       - name: Layer run-eif.sh and add OCI labels
         run: |
           BUILDCTX=$(mktemp -d)
-          cp op/run-eif.sh "$BUILDCTX/run-eif.sh"
+          cp aws-nitro/op/run-eif.sh "$BUILDCTX/run-eif.sh"
           chmod +x "$BUILDCTX/run-eif.sh"
 
           cat > "$BUILDCTX/Dockerfile" <<DOCKERFILE
