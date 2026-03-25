@@ -1,0 +1,210 @@
+##############################################################################
+# build-eif.yml
+#
+# Builds a self-contained AWS Nitro EIF runner image from a published
+# op-batcher-enclave-app image and pushes a single tag to the registry:
+#
+#   op-batcher-eif:TAG  — self-contained runner (what Terraform/ECS deploys).
+#                         Built by wrapping op-batcher-enclave-app with
+#                         enclaver (EIF + enclaver-run proxy), then layering
+#                         run-eif.sh on top as ENTRYPOINT.
+#
+##############################################################################
+
+name: Build EIF Image (OP)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: >
+          Image tag from espressosystems/optimism-espresso-integration.
+          Can be a branch name, release tag, or commit SHA, e.g.:
+          light-client-env-to-enclave-sh  (branch)
+          v1.2.3                          (release)
+          fa0f50f2                        (commit SHA)
+        required: true
+      cpu_count:
+        description: >
+          Number of vCPUs to allocate to the enclave (e.g. 2).
+          Leave blank to use the enclave-tools default.
+        required: false
+      memory_mb:
+        description: >
+          Memory in MiB to allocate to the enclave (e.g. 4096).
+          Leave blank to use the enclave-tools default.
+        required: false
+
+env:
+  REGISTRY: ghcr.io
+  SOURCE_REPO: ghcr.io/espressosystems/optimism-espresso-integration
+  EIF_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/op-batcher-eif
+
+jobs:
+  build-eif:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout infra repo (for run-eif.sh)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Lowercase image names
+        run: echo "EIF_IMAGE_NAME=${EIF_IMAGE_NAME,,}" >> $GITHUB_ENV
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve tag and pull images
+        run: |
+          RESOLVED_TAG="${{ github.event.inputs.tag || 'celo-integration-rebase-14.2' }}"
+          echo "RESOLVED_TAG=${RESOLVED_TAG}" >> $GITHUB_ENV
+          echo "Using tag: ${RESOLVED_TAG}"
+
+          APP_IMAGE="${{ env.SOURCE_REPO }}/op-batcher-enclave-app:${RESOLVED_TAG}"
+          TEE_IMAGE="${{ env.SOURCE_REPO }}/op-batcher-tee:${RESOLVED_TAG}"
+
+          docker pull "${APP_IMAGE}"
+          docker pull "${TEE_IMAGE}"
+
+          # Resolve to sha256 digests so re-running always builds from exact same bytes.
+          APP_IMAGE_PINNED="${APP_IMAGE}@$(docker inspect --format='{{index .RepoDigests 0}}' "${APP_IMAGE}" | cut -d@ -f2)"
+          TEE_IMAGE_PINNED="${TEE_IMAGE}@$(docker inspect --format='{{index .RepoDigests 0}}' "${TEE_IMAGE}" | cut -d@ -f2)"
+
+          echo "APP_IMAGE=${APP_IMAGE}"               >> $GITHUB_ENV
+          echo "TEE_IMAGE=${TEE_IMAGE}"               >> $GITHUB_ENV
+          echo "APP_IMAGE_PINNED=${APP_IMAGE_PINNED}" >> $GITHUB_ENV
+          echo "TEE_IMAGE_PINNED=${TEE_IMAGE_PINNED}" >> $GITHUB_ENV
+
+          echo "App image (pinned): ${APP_IMAGE_PINNED}"
+          echo "TEE image (pinned): ${TEE_IMAGE_PINNED}"
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Extract enclave-tools and install enclaver
+        run: |
+          # Extract enclave-tools from op-batcher-tee — ensures the tool version
+          # matches the app image being wrapped (same source tag).
+          id=$(docker create "${{ env.TEE_IMAGE_PINNED }}")
+          docker cp $id:/usr/local/bin/enclave-tools /usr/local/bin/enclave-tools
+          docker rm $id
+          chmod +x /usr/local/bin/enclave-tools
+
+          # Install enclaver at the version pinned in espresso/docker/op-stack/Dockerfile.
+          curl -fsSL https://github.com/enclaver-io/enclaver/releases/download/v0.5.0/enclaver-linux-x86_64-v0.5.0.tar.gz \
+            | tar xz --strip-components=1 -C /usr/local/bin enclaver-linux-x86_64-v0.5.0/enclaver
+
+      - name: Build EIF and capture measurements
+        run: |
+          EIF_TAG="${{ env.EIF_IMAGE_NAME }}:${{ env.RESOLVED_TAG }}"
+          echo "EIF_TAG=${EIF_TAG}" >> $GITHUB_ENV
+
+          EXTRA_ARGS=""
+          if [ -n "${{ github.event.inputs.cpu_count }}" ]; then
+            EXTRA_ARGS="${EXTRA_ARGS} --cpu-count ${{ github.event.inputs.cpu_count }}"
+          fi
+          if [ -n "${{ github.event.inputs.memory_mb }}" ]; then
+            EXTRA_ARGS="${EXTRA_ARGS} --memory-m ${{ github.event.inputs.memory_mb }}"
+          fi
+
+          BUILD_OUTPUT=$(enclave-tools build-eif \
+            --app-image "${{ env.APP_IMAGE_PINNED }}" \
+            --eif-tag "${EIF_TAG}" \
+            ${EXTRA_ARGS})
+
+          PCR0=$(echo "${BUILD_OUTPUT}" | grep '^PCR0=' | cut -d= -f2)
+          PCR1=$(echo "${BUILD_OUTPUT}" | grep '^PCR1=' | cut -d= -f2)
+          PCR2=$(echo "${BUILD_OUTPUT}" | grep '^PCR2=' | cut -d= -f2)
+
+          if [ -z "$PCR0" ]; then
+            echo "ERROR: empty PCR0 — enclave-tools build-eif failed"
+            echo "Output was: ${BUILD_OUTPUT}"
+            exit 1
+          fi
+
+          # Compute keccak hash of PCR0 (same as Arb workflow)
+          ENCLAVE_HASH=$(cast keccak "0x${PCR0}")
+          echo "ENCLAVE_HASH=${ENCLAVE_HASH}" >> $GITHUB_ENV
+
+          echo "PCR0=${PCR0}" >> $GITHUB_ENV
+          echo "PCR1=${PCR1}" >> $GITHUB_ENV
+          echo "PCR2=${PCR2}" >> $GITHUB_ENV
+
+      - name: Layer run-eif.sh and add OCI labels
+        run: |
+          BUILDCTX=$(mktemp -d)
+          cp op/run-eif.sh "$BUILDCTX/run-eif.sh"
+          chmod +x "$BUILDCTX/run-eif.sh"
+
+          cat > "$BUILDCTX/Dockerfile" <<DOCKERFILE
+          FROM busybox:musl AS busybox
+
+          FROM ${{ env.EIF_TAG }}
+          # The enclaver outer image is built from scratch — no shell or tools.
+          # Copy a static busybox and install its applets so run-eif.sh can use
+          # sh, nc, timeout, and kill.
+          COPY --from=busybox /bin/busybox /bin/busybox
+          RUN ["/bin/busybox", "--install", "-s", "/bin"]
+          COPY run-eif.sh /run-eif.sh
+          LABEL enclave.pcr0="${{ env.PCR0 }}"
+          LABEL enclave.pcr1="${{ env.PCR1 }}"
+          LABEL enclave.pcr2="${{ env.PCR2 }}"
+          LABEL enclave.hash="${{ env.ENCLAVE_HASH }}"
+          LABEL enclave.tag="${{ env.RESOLVED_TAG }}"
+          LABEL enclave.app-image="${{ env.APP_IMAGE }}"
+          LABEL enclave.app-image-pinned="${{ env.APP_IMAGE_PINNED }}"
+          LABEL enclave.tee-image="${{ env.TEE_IMAGE }}"
+          LABEL org.opencontainers.image.source="${{ github.server_url }}/${{ github.repository }}"
+          LABEL org.opencontainers.image.revision="${{ github.sha }}"
+          LABEL build.workflow.url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          ENTRYPOINT ["/run-eif.sh"]
+          DOCKERFILE
+
+          docker build -t "${{ env.EIF_TAG }}" "$BUILDCTX"
+          rm -rf "$BUILDCTX"
+
+      - name: Push runner image
+        run: docker push "${{ env.EIF_TAG }}"
+
+      - name: Summary
+        run: |
+          echo "## EIF Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Tag** | \`${{ env.RESOLVED_TAG }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Runner image** | \`${{ env.EIF_TAG }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **App image (pinned)** | \`${{ env.APP_IMAGE_PINNED }}\` |" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ github.event.inputs.cpu_count }}" ]; then
+            echo "| **CPU count** | \`${{ github.event.inputs.cpu_count }}\` |" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -n "${{ github.event.inputs.memory_mb }}" ]; then
+            echo "| **Memory (MiB)** | \`${{ github.event.inputs.memory_mb }}\` |" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "| **PCR0** | \`${{ env.PCR0 }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **PCR1** | \`${{ env.PCR1 }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **PCR2** | \`${{ env.PCR2 }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Enclave hash (keccak)** | \`${{ env.ENCLAVE_HASH }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Pull and run \`${{ env.EIF_TAG }}\` — EIF is baked in." >> $GITHUB_STEP_SUMMARY
+          echo "**Required:** \`L1_RPC_URL\`, \`L2_RPC_URL\`, \`ROLLUP_RPC_URL\`, \`ESPRESSO_URL1\`, \`OP_BATCHER_PRIVATE_KEY\`, \`ESPRESSO_ATTESTATION_SERVICE_URL\`, \`EIGENDA_PROXY_URL\`." >> $GITHUB_STEP_SUMMARY
+          echo "**Optional:** \`ESPRESSO_URL2\` (defaults to ESPRESSO_URL1), \`ESPRESSO_LIGHT_CLIENT_ADDR\` (has a default address)." >> $GITHUB_STEP_SUMMARY

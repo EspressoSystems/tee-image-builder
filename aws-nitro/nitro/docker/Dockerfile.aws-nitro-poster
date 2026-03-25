@@ -1,0 +1,62 @@
+ARG NITRO_IMAGE_PATH
+FROM ${NITRO_IMAGE_PATH}
+RUN curl -L -o kzg10-aztec20-srs-1048584.bin https://github.com/EspressoSystems/ark-srs/releases/download/v0.2.0/kzg10-aztec20-srs-1048584.bin
+USER root
+
+EXPOSE 8547
+EXPOSE 8548
+
+
+ARG AWS_REGION
+ARG AWS_SECRET_ID
+
+# Convert build args to environment variables
+ENV AWS_REGION=${AWS_REGION} \
+    AWS_SECRET_ID=${AWS_SECRET_ID}
+
+RUN echo $AWS_REGION
+RUN echo $AWS_SECRET_ID
+
+# Environment variables
+ENV AZTEC_SRS_PATH=/home/user/kzg10-aztec20-srs-1048584.bin
+ENV HOME=/home/user
+ARG CONFIG_HASH
+ENV EXPECTED_CONFIG_SHA256=${CONFIG_HASH}
+ARG CONFIG_HASH_DA
+ENV EXPECTED_CONFIG_SHA256_DA=${CONFIG_HASH_DA}
+
+COPY --chown=user:user nitro/docker/aws-nitro-entrypoint.sh /aws-nitro-entrypoint.sh
+COPY --chown=user:user nitro/docker/server.sh /server.sh
+RUN chmod +x /server.sh
+RUN chmod +x /aws-nitro-entrypoint.sh
+
+# Install required packages
+RUN apt-get update && \
+    apt-get install -y \
+      socat \
+      nfs-common \
+      procps \
+      net-tools \
+      iproute2 \
+      curl \
+      unzip \
+    && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+    && unzip awscliv2.zip \
+    && ./aws/install \
+    && rm -rf awscliv2.zip aws \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create and set permissions for /home/user/.arbitrum
+RUN mkdir -p \
+    "${HOME}/.arbitrum" \
+    /config \
+    /mnt/config && \
+    chown -R user:user \
+    /mnt/config \
+    /config \
+    "${HOME}"
+
+USER user
+
+ENTRYPOINT ["/aws-nitro-entrypoint.sh"]
