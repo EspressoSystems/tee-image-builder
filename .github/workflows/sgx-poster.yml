@@ -19,7 +19,7 @@ on:
         type: string
 
 concurrency:
-  group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/main' && github.run_number) || github.ref }}
+  group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/master' && github.run_number) || github.ref }}
   cancel-in-progress: true
 
 run-name: Build SGX Poster - ${{ inputs.base_image || 'Simple Build' }}
@@ -35,33 +35,27 @@ jobs:
           echo "BASE_IMAGE=${BASE_IMAGE}" >> ${GITHUB_ENV}
           echo "BASE_TAG=${BASE_TAG}" >> ${GITHUB_ENV}
 
-      - uses: actions/checkout@v4
-        name: Checkout Repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       # Seems to break the build. Figure this out later.
       - uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64,amd64
 
-      - uses: docker/setup-buildx-action@v3
-        name: Setup Docker BuildKit (buildx)
+      - name: Setup Docker BuildKit (buildx)
+        uses: docker/setup-buildx-action@v3
 
-      - uses: docker/login-action@v3
-        name: Login to Github Container Repo
+      - name: Login to Github Container Repo
         if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/metadata-action@v5
-        name: Generate Docker Metadata
-        id: meta
-        with:
-          images: ghcr.io/EspressoSystems/sgx-poster
-
-      - uses: docker/build-push-action@v5
-        name: Build Docker
+      - name: Build Docker
+        uses: docker/build-push-action@v5
         with:
           context: ./config
           file: ./config/Dockerfile.sgx-poster
@@ -69,7 +63,6 @@ jobs:
           load: true
           push: false
           tags: sgx-poster:latest
-          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BASE_IMAGE=${{ env.BASE_IMAGE }}
 
@@ -82,22 +75,44 @@ jobs:
       - name: Run gsc build
         run: ./gsc build sgx-poster ./nitro-espresso.manifest
 
-      - name: Inject Signing Key
+      - name: Sign Image
         if: github.event_name != 'pull_request'
-        run: echo "${{ secrets.GSC_SIGNING_KEY }}" > enclave-key.pem
+        run: |
+          echo "${{ secrets.GSC_SIGNING_KEY }}" > enclave-key.pem
+          ./gsc sign-image sgx-poster enclave-key.pem
+          rm enclave-key.pem
 
-      - name: Run gsc sign image
+      - name: Extract Enclave Info
         if: github.event_name != 'pull_request'
-        run: ./gsc sign-image sgx-poster enclave-key.pem
+        run: |
+          ./gsc info-image gsc-sgx-poster | python3 -c "
+          import sys, tomllib, os
+          d = tomllib.loads(sys.stdin.read())
+          open(os.environ['GITHUB_ENV'], 'a').write(
+              'MR_ENCLAVE=' + d['mr_enclave'] + '\n' +
+              'MR_SIGNER=' + d['mr_signer'] + '\n' +
+              'SIGN_DATE=' + d['date'] + '\n' +
+              'IS_DEBUG=' + str(d['debug']).lower() + '\n'
+          )
+          open(os.environ['GITHUB_STEP_SUMMARY'], 'a').write(
+              '## SGX Enclave Info\n\n| Field | Value |\n| --- | --- |\n' +
+              '| MRENCLAVE | \`' + d['mr_enclave'] + '\` |\n' +
+              '| MRSIGNER | \`' + d['mr_signer'] + '\` |\n' +
+              '| Sign Date | ' + d['date'] + ' |\n' +
+              '| Debug | ' + str(d['debug']).lower() + ' |\n'
+          )
+          "
 
-      - name: Delete signing key
+      - name: Tag and Push Docker
         if: github.event_name != 'pull_request'
-        run: rm enclave-key.pem
-
-      - name: Tag Docker
-        if: github.event_name != 'pull_request'
-        run: docker tag gsc-sgx-poster ghcr.io/espressosystems/gsc-sgx-poster:${{ env.BASE_TAG }}
-
-      - name: Push Docker
-        if: github.event_name != 'pull_request'
-        run: docker push ghcr.io/espressosystems/gsc-sgx-poster:${{ env.BASE_TAG }}
+        run: |
+          printf 'FROM gsc-sgx-poster\n' | docker build \
+            --label "sgx.mrenclave=${{ env.MR_ENCLAVE }}" \
+            --label "sgx.mrsigner=${{ env.MR_SIGNER }}" \
+            --label "sgx.sign_date=${{ env.SIGN_DATE }}" \
+            --label "sgx.debug=${{ env.IS_DEBUG }}" \
+            --label "base.image=${{ env.BASE_IMAGE }}" \
+            --label "base.tag=${{ env.BASE_TAG }}" \
+            -t ghcr.io/espressosystems/gsc-sgx-poster:${{ env.BASE_TAG }} \
+            -
+          docker push ghcr.io/espressosystems/gsc-sgx-poster:${{ env.BASE_TAG }}
