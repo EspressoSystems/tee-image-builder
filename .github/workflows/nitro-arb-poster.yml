@@ -144,7 +144,7 @@ jobs:
           echo "Tagged with PCR0 HASH: ${{ env.ENCLAVE_HASH }}"
 
       - name: Push Docker
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'workflow_dispatch'
         run: |
           docker push ghcr.io/espressosystems/aws-nitro-arb-poster:${{ env.NITRO_IMAGE_TAG || 'integration' }}
           echo "Pushed image with PCR0 HASH: ${{ env.ENCLAVE_HASH }}"

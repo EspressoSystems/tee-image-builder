@@ -97,7 +97,7 @@ jobs:
       - name: Extract Enclave Info
         if: github.event_name == 'workflow_dispatch'
         run: |
-          ./gsc-tool/gsc info-image sgx-arb-poster | python3 -c "
+          ./gsc-tool/gsc info-image gsc-sgx-poster | python3 -c "
           import sys, tomllib, os
           d = tomllib.loads(sys.stdin.read())
           open(os.environ['GITHUB_ENV'], 'a').write(
@@ -118,7 +118,7 @@ jobs:
       - name: Tag and Push Docker
         if: github.event_name == 'workflow_dispatch'
         run: |
-          printf 'FROM sgx-arb-poster\n' | docker build \
+          printf 'FROM gsc-sgx-poster\n' | docker build \
             --label "sgx.mrenclave=${{ env.MR_ENCLAVE }}" \
             --label "sgx.mrsigner=${{ env.MR_SIGNER }}" \
             --label "sgx.sign_date=${{ env.SIGN_DATE }}" \
