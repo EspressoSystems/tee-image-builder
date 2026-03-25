@@ -5,7 +5,7 @@ This repository contains configurations and workflows for running different stac
 ## Repository Structure
 
 - `nitro/`: Arbitrum Nitro batch poster implementation
-- `op/`: OP Stack implementation (coming soon)
+- `op/`: OP Stack implementation
 - `.github/workflows/`: CI/CD workflows for building enclave images
 
 ## Nitro Stack

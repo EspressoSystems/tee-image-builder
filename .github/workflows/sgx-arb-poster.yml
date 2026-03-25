@@ -1,4 +1,4 @@
-name: Build SGX Poster
+name: Build SGX Poster (Arb)
 
 on:
   push:
@@ -22,7 +22,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/main' && github.run_number) || github.ref }}
   cancel-in-progress: true
 
-run-name: Build SGX Poster - ${{ inputs.base_image || 'Simple Build' }}
+run-name: Build SGX Poster (Arb) - ${{ inputs.base_image || 'Simple Build' }}
 
 jobs:
   sgx-poster:
