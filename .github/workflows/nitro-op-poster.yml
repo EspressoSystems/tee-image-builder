@@ -4,7 +4,7 @@
 # Builds a self-contained AWS Nitro EIF runner image from a published
 # op-batcher-enclave-app image and pushes a single tag to the registry:
 #
-#   op-batcher-eif:TAG  — self-contained runner (what Terraform/ECS deploys).
+#   aws-nitro-op-poster:TAG  — self-contained runner (what Terraform/ECS deploys).
 #                         Built by wrapping op-batcher-enclave-app with
 #                         enclaver (EIF + enclaver-run proxy), then layering
 #                         run-eif.sh on top as ENTRYPOINT.
@@ -44,7 +44,7 @@ on:
 env:
   REGISTRY: ghcr.io
   SOURCE_REPO: ghcr.io/espressosystems/optimism-espresso-integration
-  EIF_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/op-batcher-eif
+  EIF_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/aws-nitro-op-poster
 
 jobs:
   build-eif:
