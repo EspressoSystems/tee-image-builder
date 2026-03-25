@@ -89,10 +89,13 @@ jobs:
 
       - name: Sign Image
         if: github.event_name == 'workflow_dispatch'
+        env:
+          GSC_SIGNING_KEY: ${{ secrets.GSC_SIGNING_KEY }}
         run: |
-          echo "${{ secrets.GSC_SIGNING_KEY }}" > enclave-key.pem
+          printf '%s\n' "$GSC_SIGNING_KEY" > enclave-key.pem
+          chmod 600 enclave-key.pem
           ./gsc-tool/gsc sign-image sgx-poster enclave-key.pem
-          rm enclave-key.pem
+          rm -f enclave-key.pem
 
       - name: Extract Enclave Info
         if: github.event_name == 'workflow_dispatch'
