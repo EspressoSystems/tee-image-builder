@@ -78,8 +78,7 @@ jobs:
 
       - name: Apply Espresso template and config
         run: |
-          # Our entrypoint.manifest.template changes loader.entrypoint → loader.entrypoint.uri
-          # which is required by the Gramine version pinned in sgx/config.yaml.template.
+          cp sgx/templates/Dockerfile.common.compile.template gsc-tool/templates/Dockerfile.common.compile.template
           cp sgx/templates/debian/entrypoint.manifest.template gsc-tool/templates/debian/entrypoint.manifest.template
           cp sgx/keys/intel-sgx-deb.key gsc-tool/keys/intel-sgx-deb.key
           cp sgx/config.yaml.template gsc-tool/config.yaml
