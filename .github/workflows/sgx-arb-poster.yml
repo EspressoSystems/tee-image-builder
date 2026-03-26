@@ -94,7 +94,7 @@ jobs:
         run: |
           printf '%s\n' "$GSC_SIGNING_KEY" > enclave-key.pem
           chmod 600 enclave-key.pem
-          ./gsc-tool/gsc sign-image sgx-poster enclave-key.pem
+          ./gsc-tool/gsc sign-image -c gsc-tool/config.yaml sgx-poster enclave-key.pem
           rm -f enclave-key.pem
 
       - name: Extract Enclave Info
