@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Exit immediately on error and show commands
-set -ex
+set -e
 
 # Update system packages
 echo "Updating system packages..."
