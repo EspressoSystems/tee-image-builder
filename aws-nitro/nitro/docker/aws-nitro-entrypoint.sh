@@ -40,7 +40,7 @@ fi
 
 # Unmount config as we copied files out of mnt directory
 echo "Unmounting config"
-umount "${ENCLAVE_CONFIG_SOURCE_DIR}"
+umount "${ENCLAVE_CONFIG_SOURCE_DIR}" || echo "WARNING: Failed to unmount config directory" >&2
 
 SECRET=$(aws secretsmanager get-secret-value \
   --secret-id "$AWS_SECRET_ID" \
