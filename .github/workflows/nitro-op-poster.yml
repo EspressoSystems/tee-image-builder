@@ -13,6 +13,8 @@
 
 name: Build EIF Image (OP)
 
+run-name: Build EIF Image (OP) - ${{ inputs.tag || 'Simple Build' }}
+
 on:
   push:
     branches:
