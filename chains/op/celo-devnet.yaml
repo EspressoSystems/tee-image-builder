@@ -1,0 +1,36 @@
+committed:   # Baked as ENV into EIF at build time — changing these changes PCR0
+  ESPRESSO_LIGHT_CLIENT_ADDR: "0x303872bb82a191771321d4828888920100d0b3e4"
+  DATA_AVAILABILITY_TYPE: "calldata"
+  NUM_CONFIRMATIONS: "8"
+  ALTDA_VERIFY_ON_READ: "false"
+  ALTDA_DA_SERVICE: "true"
+  ALTDA_MAX_CONCURRENT_DA_REQUESTS: "1"
+  ALTDA_PUT_TIMEOUT: "30s"
+  ALTDA_GET_TIMEOUT: "30s"
+  COMPRESSION_ALGO: "brotli-9"
+  MAX_CHANNEL_DURATION: "1000"
+  TARGET_NUM_FRAMES: "60"
+  MAX_L1_TX_SIZE_BYTES: "120000"
+  SUB_SAFETY_MARGIN: "6"
+  TXMGR_MIN_TIP_CAP: "0.02"
+  MAX_PENDING_TX: "32"
+  THROTTLE_THRESHOLD: "0"
+  RPC_ENABLE_ADMIN: "true"
+
+runtime:     # Passed at deploy time; defaults shown
+  # Polling/resubmission intervals — operational tuning, no rebuild needed
+  POLL_INTERVAL: "1s"
+  ESPRESSO_POLL_INTERVAL: "1s"
+  RESUBMISSION_TIMEOUT: "30s"
+  # Deployment-specific starting heights — set per deployment, not per chain image
+  ESPRESSO_ORIGIN_HEIGHT_ESPRESSO: "0"
+  ESPRESSO_ORIGIN_HEIGHT_L2: "0"
+  # Secrets and deployment-specific endpoints — must be provided externally at deploy time:
+  # L1_RPC_URL: required
+  # L2_RPC_URL: required
+  # ROLLUP_RPC_URL: required
+  # OP_BATCHER_PRIVATE_KEY: required (secret)
+  # ESPRESSO_URL1: required
+  # ESPRESSO_URL2: optional (defaults to ESPRESSO_URL1 at runtime)
+  # ESPRESSO_ATTESTATION_SERVICE_URL: required
+  # EIGENDA_PROXY_URL: required
