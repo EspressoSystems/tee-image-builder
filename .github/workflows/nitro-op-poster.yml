@@ -138,12 +138,6 @@ jobs:
           tar xz --strip-components=1 -C /usr/local/bin enclaver-linux-x86_64-v0.5.0/enclaver < "${ENCLAVER_TARBALL}"
           rm -f "${ENCLAVER_TARBALL}"
 
-      - name: Debug enclave-tools binary
-        run: |
-          file /usr/local/bin/enclave-tools
-          readelf -l /usr/local/bin/enclave-tools | grep interpreter || true
-          ldd /usr/local/bin/enclave-tools || true
-
       - name: Build committed-params intermediate image
         run: |
           CONFIG_PATH="chains/op/${{ env.CHAIN }}.yaml"
