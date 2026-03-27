@@ -121,8 +121,9 @@ jobs:
           chmod +x /usr/local/bin/enclave-tools
 
           # enclave-tools in some upstream builds is musl-linked;
+          # GitHub Actions runners are glibc-only — expose the interpreter path.
           sudo apt-get install -y --no-install-recommends musl
-          MUSL_SO=$(find /lib /usr/lib -name 'ld-musl-x86_64.so.1' 2>/dev/null | head -1)
+          MUSL_SO=$(dpkg -L musl | grep '\.so' | head -1)
           [ -n "$MUSL_SO" ] && sudo ln -sf "$MUSL_SO" /lib/ld-musl-x86_64.so.1 || true
 
           # Install enclaver at the version pinned in espresso/docker/op-stack/Dockerfile.
