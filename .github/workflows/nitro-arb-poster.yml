@@ -1,0 +1,138 @@
+name: Build EIF Image (Arb)
+
+on:
+  workflow_dispatch:
+    inputs:
+      config_hash:
+        type: string
+        description: 'SHA256 hash for the config'
+        required: true
+      config_hash_da:
+        type: string
+        description: 'SHA256 hash for the config with da (only needed if da enabled)'
+        required: true
+      nitro_node_image_path:
+        type: string
+        description: 'Full nitro node image path'
+        required: true
+      aws_region:
+        type: string
+        description: 'AWS region for Secrets Manager'
+        required: true
+      aws_secret_id:
+        type: string
+        description: 'AWS Secrets Manager secret ARN'
+        required: true
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+run-name: Enclaver Docker Image - ${{ github.event.inputs.nitro_node_image_path || 'Simple Build' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set Image Variables
+        run: |
+          NITRO_IMAGE_PATH="${{github.event.inputs.nitro_node_image_path || 'ghcr.io/espressosystems/nitro-espresso-integration/nitro-node:integration'}}"
+          NITRO_TAG=$(echo "${NITRO_IMAGE_PATH}" | sed 's/.*://')
+
+          echo "NITRO_IMAGE_PATH=${NITRO_IMAGE_PATH}" >> ${GITHUB_ENV}
+          echo "NITRO_IMAGE_TAG=${NITRO_TAG}" >> ${GITHUB_ENV}
+
+          echo "Using nitro image: ${NITRO_IMAGE_PATH}"
+          echo "Extracted tag for naming: ${NITRO_TAG}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        name: Login to Github Container Repo
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./aws-nitro
+          file: ./aws-nitro/nitro/docker/Dockerfile.aws-nitro-poster
+          build-args: |
+            NITRO_IMAGE_PATH=${{ env.NITRO_IMAGE_PATH }}
+            CONFIG_HASH=${{ github.event.inputs.config_hash}}
+            CONFIG_HASH_DA=${{ github.event.inputs.config_hash_da}}
+            AWS_REGION=${{ github.event.inputs.aws_region }}
+            AWS_SECRET_ID=${{ github.event.inputs.aws_secret_id }}
+          labels: |
+            build.github.run_number=${{ github.run_number }}
+            build.github.actor=${{ github.actor }}
+            build.github.ref=${{ github.ref }}
+            build.nitro.source_image=${{ env.NITRO_IMAGE_PATH }}
+            build.workflow.page=https://github.com/${{ github.repository }}/actions/workflows/nitro-arb-poster.yml
+
+          push: false
+          tags: nitro-image:latest
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Enclaver installation
+        run: |
+          curl -fsSL https://github.com/enclaver-io/enclaver/releases/download/v0.5.0/enclaver-linux-x86_64-v0.5.0.tar.gz \
+            | tar xz --strip-components=1 -C /usr/local/bin enclaver-linux-x86_64-v0.5.0/enclaver
+          enclaver --version
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Run Enclaver build
+        run: |
+          build_output=$(sudo enclaver build --file ./aws-nitro/nitro/enclaver/enclaver.yaml)
+          echo "Build complete! Output: $build_output"
+          pcr0_raw="0x$(echo "$build_output" | grep -oP '"PCR0": "\K[^"]+')"
+          pcr0_keccak=$(cast keccak $pcr0_raw)
+          echo "PCR0 keccak hash: $pcr0_keccak"
+          echo "ENCLAVE_HASH=${pcr0_keccak}" >> ${GITHUB_ENV}
+          docker images
+
+      - name: Tag Docker
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "Available Docker images:"
+          docker images
+          echo "Adding PCR0 label to image..."
+          cat > Dockerfile.labels << EOF
+          FROM enclaver-batch-poster
+          LABEL org.opencontainers.image.description="AWS Nitro batch poster image built with enclave hash: ${{ env.ENCLAVE_HASH }}"
+          LABEL org.opencontainers.image.source="${{ github.server_url }}/${{ github.repository }}"
+          LABEL org.opencontainers.image.revision="${{ github.sha }}"
+          LABEL org.opencontainers.image.created="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          LABEL enclave.hash="${{ env.ENCLAVE_HASH }}"
+          LABEL build.github.run_id="${{ github.run_id }}"
+          LABEL build.workflow.url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          EOF
+
+          # Build with labels and tag
+          docker build -f Dockerfile.labels -t ghcr.io/espressosystems/aws-nitro-arb-poster:${{ env.NITRO_IMAGE_TAG || 'integration' }} .
+          echo "Tagged with PCR0 HASH: ${{ env.ENCLAVE_HASH }}"
+
+      - name: Push Docker
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          docker push ghcr.io/espressosystems/aws-nitro-arb-poster:${{ env.NITRO_IMAGE_TAG || 'integration' }}
+          echo "Pushed image with PCR0 HASH: ${{ env.ENCLAVE_HASH }}"

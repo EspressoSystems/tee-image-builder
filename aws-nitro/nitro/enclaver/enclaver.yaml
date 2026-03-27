@@ -1,0 +1,13 @@
+version: v1
+name: "batcher"
+target: "enclaver-batch-poster:latest"
+sources:
+  app: "nitro-image:latest"
+defaults:
+  memory_mb: 12244
+  cpu_count: 2
+egress:
+  allow:
+    - "*"
+    - "**"
+    - 0.0.0.0/0
