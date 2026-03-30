@@ -109,7 +109,6 @@ echo "====================================="
 # NOTE: private key is not logged here — enclave-entrypoint.bash redacts it.
 send_batcher_args() {
     printf '%s\0' \
-        "--committed-params-json=${COMMITTED_PARAMS_JSON}" \
         "--l1-eth-rpc=$L1_RPC_URL" \
         "--l2-eth-rpc=$L2_RPC_URL" \
         "--rollup-rpc=$ROLLUP_RPC_URL" \
