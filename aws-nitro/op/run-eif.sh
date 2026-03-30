@@ -108,6 +108,8 @@ echo "====================================="
 # a second consecutive NUL (empty string) signals end-of-args.
 # NOTE: private key is not logged here — enclave-entrypoint.bash redacts it.
 send_batcher_args() {
+    # TODO: add "--committed-params-json=${COMMITTED_PARAMS_JSON}" once
+    # op-batcher registers that flag upstream (optimism-espresso-integration).
     printf '%s\0' \
         "--l1-eth-rpc=$L1_RPC_URL" \
         "--l2-eth-rpc=$L2_RPC_URL" \
