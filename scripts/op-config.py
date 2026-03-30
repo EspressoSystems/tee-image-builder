@@ -20,7 +20,10 @@ Usage:
   python3 scripts/op-config.py <config-path> committed-json
   python3 scripts/op-config.py <config-path> labels
 """
-import sys, json, hashlib, argparse
+import sys
+import json
+import hashlib
+import argparse
 import yaml
 
 
