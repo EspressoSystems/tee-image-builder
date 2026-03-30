@@ -61,7 +61,7 @@ def mode_labels(cfg, committed):
         print(f'LABEL config.committed.{k}="{v}"')
         print(f'LABEL config.committed.{k}="{v.replace('"', '\"')}"')
         print(f'LABEL config.runtime.{k}="{v}"')
-
+        print(f'LABEL config.runtime.{k}="{v.replace('"', '\"')}"')
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
