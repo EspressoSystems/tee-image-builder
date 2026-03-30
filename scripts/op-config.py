@@ -59,7 +59,7 @@ def mode_committed_json(cfg, committed):
 def mode_labels(cfg, committed):
     for k, v in committed.items():
         print(f'LABEL config.committed.{k}="{v}"')
-    for k, v in cfg.get("runtime", {}).items():
+        print(f'LABEL config.committed.{k}="{v.replace('"', '\"')}"')
         print(f'LABEL config.runtime.{k}="{v}"')
 
 
