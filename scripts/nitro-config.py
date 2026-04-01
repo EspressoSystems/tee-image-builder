@@ -2,15 +2,11 @@
 """
 Nitro batch poster config helper for the EIF build workflow.
 
-Reads chains/nitro/<chain>.json and outputs one of:
+Reads chains/nitro/<chain>.json and outputs:
 
-  da-enabled  — prints "true" or "false" indicating whether
-                data-availability is enabled in the config.
-
-  labels      — Dockerfile LABEL lines for OCI labels on the runner image.
+  labels  — Dockerfile LABEL lines for OCI labels on the runner image.
 
 Usage:
-  python3 scripts/nitro-config.py <config-path> da-enabled
   python3 scripts/nitro-config.py <config-path> labels
 """
 import json
@@ -20,11 +16,6 @@ import argparse
 def load_config(config_path):
     with open(config_path) as f:
         return json.load(f)
-
-
-def mode_da_enabled(config):
-    enabled = config.get("node", {}).get("data-availability", {}).get("enable", False)
-    print("true" if enabled else "false")
 
 
 def mode_labels(config):
@@ -55,14 +46,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("config_path", help="Path to chains/nitro/<chain>.json")
-    parser.add_argument("mode", choices=["da-enabled", "labels"])
+    parser.add_argument("mode", choices=["labels"])
     args = parser.parse_args()
 
     config = load_config(args.config_path)
 
-    if args.mode == "da-enabled":
-        mode_da_enabled(config)
-    elif args.mode == "labels":
+    if args.mode == "labels":
         mode_labels(config)
 
 

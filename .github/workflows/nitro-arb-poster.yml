@@ -11,9 +11,8 @@
 #   Excluded fields (not part of the hash): private-key, parent-chain URL,
 #   txns intervals, data-availability, and celestia-cfg.
 #
-#   DA hash (EXPECTED_CONFIG_SHA256_DA) is optional: pass config_hash_da when
-#   DA is enabled. The operator computes it from the full config (which contains
-#   private aggregator URLs not committed to this repo).
+#   Private values (DA aggregator URLs, celestia URL) are injected at runtime
+#   from AWS Secrets Manager and are trusted via IAM — not hashed.
 #
 ##############################################################################
 
@@ -47,19 +46,6 @@ on:
         type: string
         description: 'AWS Secrets Manager secret ARN'
         required: true
-      config_hash_da:
-        type: string
-        description: >
-          SHA256 of the full config with data-availability included.
-          Required when data-availability.enable is true in the chain config.
-          Compute with: jq -cS 'del(
-            .node."batch-poster"."parent-chain-wallet"."private-key",
-            .node.espresso."batch-poster"."txns-monitoring-interval",
-            .node.espresso."batch-poster"."txns-resubmission-interval",
-            .node.espresso.streamer."txns-polling-interval",
-            ."parent-chain".connection.url,
-            .node."celestia-cfg")' poster_config.json | sha256sum
-        required: false
 
 env:
   REGISTRY: ghcr.io
@@ -92,9 +78,11 @@ jobs:
           echo "Using nitro image: ${NITRO_IMAGE_PATH}"
           echo "Using config: ${CONFIG_PATH}"
 
-      - name: Compute config hashes
+      - name: Compute config hash
         run: |
           # Computed with jq — identical to the del() in aws-nitro-entrypoint.sh.
+          # Private fields (DA aggregator URLs, celestia URL) are excluded from the hash
+          # and injected at runtime from AWS Secrets Manager.
           CONFIG_HASH=$(jq -cS 'del(
             .node."batch-poster"."parent-chain-wallet"."private-key",
             .node.espresso."batch-poster"."txns-monitoring-interval",
@@ -106,18 +94,6 @@ jobs:
           )' "${{ env.CONFIG_PATH }}" | sha256sum | cut -d' ' -f1)
           echo "CONFIG_HASH=${CONFIG_HASH}" >> $GITHUB_ENV
           echo "Config hash: ${CONFIG_HASH}"
-
-          # DA hash — required when data-availability is enabled in the chain config.
-          DA_ENABLED=$(python3 scripts/nitro-config.py "${{ env.CONFIG_PATH }}" da-enabled)
-          CONFIG_HASH_DA="${{ github.event.inputs.config_hash_da }}"
-          if [ "${DA_ENABLED}" = "true" ] && [ -z "${CONFIG_HASH_DA}" ]; then
-            echo "ERROR: data-availability is enabled in ${{ env.CONFIG_PATH }} but config_hash_da was not provided"
-            exit 1
-          fi
-          if [ -n "${CONFIG_HASH_DA}" ]; then
-            echo "CONFIG_HASH_DA=${CONFIG_HASH_DA}" >> $GITHUB_ENV
-            echo "DA config hash: ${CONFIG_HASH_DA}"
-          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -137,7 +113,6 @@ jobs:
           build-args: |
             NITRO_IMAGE_PATH=${{ env.NITRO_IMAGE_PATH }}
             CONFIG_HASH=${{ env.CONFIG_HASH }}
-            CONFIG_HASH_DA=${{ env.CONFIG_HASH_DA }}
             AWS_REGION=${{ github.event.inputs.aws_region }}
             AWS_SECRET_ID=${{ github.event.inputs.aws_secret_id }}
           push: false
@@ -209,9 +184,6 @@ jobs:
             echo 'LABEL enclave.chain="${{ env.CHAIN }}"'
             echo 'LABEL enclave.nitro-image="${{ env.NITRO_IMAGE_PATH }}"'
             echo 'LABEL enclave.config-hash="${{ env.CONFIG_HASH }}"'
-            if [ -n "${{ env.CONFIG_HASH_DA }}" ]; then
-              echo 'LABEL enclave.config-hash-da="${{ env.CONFIG_HASH_DA }}"'
-            fi
             cat /tmp/config-labels.txt
             echo 'LABEL org.opencontainers.image.source="${{ github.server_url }}/${{ github.repository }}"'
             echo 'LABEL org.opencontainers.image.revision="${{ github.sha }}"'
@@ -237,9 +209,6 @@ jobs:
           echo "| **PCR2** | \`${{ env.PCR2 }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Enclave hash (keccak)** | \`${{ env.ENCLAVE_HASH }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Config hash** | \`${{ env.CONFIG_HASH }}\` |" >> $GITHUB_STEP_SUMMARY
-          if [ -n "${{ env.CONFIG_HASH_DA }}" ]; then
-            echo "| **Config DA hash** | \`${{ env.CONFIG_HASH_DA }}\` |" >> $GITHUB_STEP_SUMMARY
-          fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Config hash auto-computed from \`${{ env.CONFIG_PATH }}\`." >> $GITHUB_STEP_SUMMARY
           echo "Run \`docker inspect ${{ env.EIF_TAG }}\` to view all labels." >> $GITHUB_STEP_SUMMARY

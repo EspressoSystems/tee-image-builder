@@ -74,10 +74,18 @@ TXN_RESUBMIT_INTERVAL=$(echo "$SECRET_JSON" | jq -r '."txn-resubmit-interval" //
 STREAMER_POLLING_INTERVAL=$(echo "$SECRET_JSON" | jq -r '."streamer-polling-interval" //"10s"')
 DA_REST_AGGREGATOR=$(echo "$SECRET_JSON" | jq -c '."da-rest-aggregator" // empty')
 DA_RPC_AGGREGATOR=$(echo "$SECRET_JSON" | jq -c '."da-rpc-aggregator" // empty')
+CELESTIA_URL=$(echo "$SECRET_JSON" | jq -r '."celestia-url" // empty')
 DA_ENABLED=$(jq -r '.node."data-availability".enable // false' "${ENCLAVE_CONFIG_TARGET_DIR}/poster_config.json")
+CELESTIA_ENABLED=$(jq -r '.node."celestia-cfg".enable // false' "${ENCLAVE_CONFIG_TARGET_DIR}/poster_config.json")
 if [[ "$DA_ENABLED" == "true" ]]; then
   if [[ -z "$DA_REST_AGGREGATOR" || -z "$DA_RPC_AGGREGATOR" ]]; then
     echo "ERROR: data-availability is enabled but da-rest-aggregator or da-rpc-aggregator are missing from secret config" >&2
+    exit 1
+  fi
+fi
+if [[ "$CELESTIA_ENABLED" == "true" ]]; then
+  if [[ -z "$CELESTIA_URL" ]]; then
+    echo "ERROR: celestia is enabled but celestia-url is missing from secret config" >&2
     exit 1
   fi
 fi
@@ -94,7 +102,7 @@ CONFIG_SHA=$(jq -cS 'del(
     exit 1
 }
 
-echo "Comparing config sha without da"
+echo "Comparing config sha"
 if [ "$CONFIG_SHA" != "$EXPECTED_CONFIG_SHA256" ]; then
     echo "ERROR: Config sha256 mismatch"
     echo "Expected: $EXPECTED_CONFIG_SHA256"
@@ -110,26 +118,14 @@ if [[ "$DA_ENABLED" == "true" ]]; then
     '.node["data-availability"]["rest-aggregator"] = $rest | .node["data-availability"]["rpc-aggregator"] = $rpc | .node["data-availability"]["parent-chain-node-url"] = $rpc_url' \
     "${ENCLAVE_CONFIG_TARGET_DIR}/poster_config.json" > /tmp/poster_config_patched.json
   mv /tmp/poster_config_patched.json "${ENCLAVE_CONFIG_TARGET_DIR}/poster_config.json"
+fi
 
-  CONFIG_SHA_DA=$(jq -cS 'del(
-        .node."batch-poster"."parent-chain-wallet"."private-key",
-        .node.espresso."batch-poster"."txns-monitoring-interval",
-        .node.espresso."batch-poster"."txns-resubmission-interval",
-        .node.espresso.streamer."txns-polling-interval",
-        ."parent-chain".connection.url,
-        .node."celestia-cfg"
-      )' "${ENCLAVE_CONFIG_TARGET_DIR}/poster_config.json" | sha256sum | cut -d' ' -f1) || {
-      echo "ERROR: Failed to calculate DA config sha256"
-      exit 1
-  }
-  echo "Comparing config sha with da"
-  echo "Expected config sha with da: $EXPECTED_CONFIG_SHA256_DA"
-  if [ "$CONFIG_SHA_DA" != "$EXPECTED_CONFIG_SHA256_DA" ]; then
-    echo "ERROR: Config sha256 mismatch"
-    echo "Expected: $EXPECTED_CONFIG_SHA256_DA"
-    echo "Actual:   $CONFIG_SHA_DA"
-    exit 1
-  fi
+if [[ "$CELESTIA_ENABLED" == "true" ]]; then
+  echo "Injecting celestia URL from aws secrets into config"
+  jq --arg url "$CELESTIA_URL" \
+    '.node["celestia-cfg"]["url"] = $url' \
+    "${ENCLAVE_CONFIG_TARGET_DIR}/poster_config.json" > /tmp/poster_config_patched.json
+  mv /tmp/poster_config_patched.json "${ENCLAVE_CONFIG_TARGET_DIR}/poster_config.json"
 fi
 
 echo "Starting vsock server"
