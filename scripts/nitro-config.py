@@ -13,7 +13,8 @@ Usage:
   python3 scripts/nitro-config.py <config-path> da-enabled
   python3 scripts/nitro-config.py <config-path> labels
 """
-import json, argparse
+import json
+import argparse
 
 
 def load_config(config_path):
@@ -34,7 +35,7 @@ def mode_labels(config):
         entry = chain_info[0] if chain_info else {}
         chain_id = entry.get("chain-id", "unknown")
         parent_chain_id = entry.get("parent-chain-id", "unknown")
-    except Exception:
+    except (json.JSONDecodeError, IndexError, KeyError):
         chain_id = parent_chain_id = "unknown"
 
     bp = config.get("node", {}).get("batch-poster", {})
