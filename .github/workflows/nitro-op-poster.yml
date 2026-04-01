@@ -4,16 +4,20 @@
 # Builds a self-contained AWS Nitro EIF runner image from a published
 # op-batcher-enclave-app image and pushes a single tag to the registry:
 #
-#   aws-nitro-op-poster:TAG  — self-contained runner (what Terraform/ECS deploys).
+#   aws-nitro-op-poster:<chain>-<tag>  — self-contained runner (what Terraform/ECS deploys).
 #                         Built by wrapping op-batcher-enclave-app with
 #                         enclaver (EIF + enclaver-run proxy), then layering
 #                         run-eif.sh on top as ENTRYPOINT.
+#
+# Config source of truth: chains/op/<chain>.yaml
+#   committed: section — baked as ENV into the EIF at build time (affects PCR0)
+#   runtime:   section — defaults documented here; passed at deploy time
 #
 ##############################################################################
 
 name: Build EIF Image (OP)
 
-run-name: Build EIF Image (OP) - ${{ inputs.tag || 'Simple Build' }}
+run-name: Build EIF Image (OP) - ${{ inputs.chain || 'celo-devnet' }} @ ${{ inputs.tag || 'default' }}
 
 on:
   push:
@@ -24,6 +28,12 @@ on:
       - main
   workflow_dispatch:
     inputs:
+      chain:
+        description: >
+          OP chain to build, e.g. celo-devnet.
+          Selects chains/op/<chain>.yaml for committed and runtime config.
+        required: false
+        default: 'celo-devnet'
       tag:
         description: >
           Image tag from espressosystems/optimism-espresso-integration.
@@ -47,6 +57,7 @@ env:
   REGISTRY: ghcr.io
   SOURCE_REPO: ghcr.io/espressosystems/optimism-espresso-integration
   EIF_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/aws-nitro-op-poster
+  CHAIN: ${{ github.event.inputs.chain || 'celo-devnet' }}
 
 jobs:
   build-eif:
@@ -56,7 +67,7 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout infra repo (for run-eif.sh)
+      - name: Checkout infra repo (for run-eif.sh and chain configs)
         uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
@@ -109,13 +120,48 @@ jobs:
           docker rm $id
           chmod +x /usr/local/bin/enclave-tools
 
+          # enclave-tools in some upstream builds is musl-linked;
+          # GitHub Actions runners are glibc-only — expose the interpreter path.
+          sudo apt-get install -y --no-install-recommends musl
+          MUSL_SO=$(dpkg -L musl | grep '\.so' | head -1)
+          [ -n "$MUSL_SO" ] && sudo ln -sf "$MUSL_SO" /lib/ld-musl-x86_64.so.1 || true
+
           # Install enclaver at the version pinned in espresso/docker/op-stack/Dockerfile.
-          curl -fsSL https://github.com/enclaver-io/enclaver/releases/download/v0.5.0/enclaver-linux-x86_64-v0.5.0.tar.gz \
-            | tar xz --strip-components=1 -C /usr/local/bin enclaver-linux-x86_64-v0.5.0/enclaver
+          # Verify SHA256 before extracting — a malicious binary could produce a
+          # fraudulent EIF with a fake PCR0.
+          ENCLAVER_URL="https://github.com/enclaver-io/enclaver/releases/download/v0.5.0/enclaver-linux-x86_64-v0.5.0.tar.gz"
+          ENCLAVER_SHA256="c1a09f9dc4c687bf321bbfa0cf42451a3b1618457e21c39498884cd3bce0b3e3"
+          ENCLAVER_TARBALL="/tmp/enclaver.tar.gz"
+
+          curl -fsSL "${ENCLAVER_URL}" -o "${ENCLAVER_TARBALL}"
+          echo "${ENCLAVER_SHA256}  ${ENCLAVER_TARBALL}" | sha256sum -c
+          tar xz --strip-components=1 -C /usr/local/bin enclaver-linux-x86_64-v0.5.0/enclaver < "${ENCLAVER_TARBALL}"
+          rm -f "${ENCLAVER_TARBALL}"
+
+      - name: Build committed-params intermediate image
+        run: |
+          CONFIG_PATH="chains/op/${{ env.CHAIN }}.yaml"
+          echo "Reading committed params from ${CONFIG_PATH}"
+
+          # Bakes only EXPECTED_COMMITTED_PARAMS_SHA256 into the EIF (not individual values).
+          # Individual values are attached to the outer runner image as /committed-params.json
+          # and config.committed.* OCI labels — visible via docker inspect, not part of PCR0 directly.
+          python3 scripts/op-config.py "${CONFIG_PATH}" dockerfile-params --app-image "${{ env.APP_IMAGE_PINNED }}" > Dockerfile.params
+
+          echo "=== Dockerfile.params ==="
+          cat Dockerfile.params
+          echo "========================="
+
+          docker build -f Dockerfile.params -t app-with-committed-params .
+          rm -f Dockerfile.params
+
+          INTERMEDIATE_IMAGE_ID=$(docker inspect --format '{{.Id}}' app-with-committed-params)
+          echo "Intermediate image (pinned): ${INTERMEDIATE_IMAGE_ID}"
+          echo "INTERMEDIATE_IMAGE_ID=${INTERMEDIATE_IMAGE_ID}" >> $GITHUB_ENV
 
       - name: Build EIF and capture measurements
         run: |
-          EIF_TAG="${{ env.EIF_IMAGE_NAME }}:${{ env.RESOLVED_TAG }}"
+          EIF_TAG="${{ env.EIF_IMAGE_NAME }}:${{ env.CHAIN }}-${{ env.RESOLVED_TAG }}"
           echo "EIF_TAG=${EIF_TAG}" >> $GITHUB_ENV
 
           EXTRA_ARGS=""
@@ -126,8 +172,10 @@ jobs:
             EXTRA_ARGS="${EXTRA_ARGS} --memory-m ${{ github.event.inputs.memory_mb }}"
           fi
 
+          # Use the intermediate image (with committed params baked in) as the app image.
+          # This ensures the committed: values are part of the EIF and affect PCR0.
           BUILD_OUTPUT=$(enclave-tools build-eif \
-            --app-image "${{ env.APP_IMAGE_PINNED }}" \
+            --app-image "${{ env.INTERMEDIATE_IMAGE_ID }}" \
             --eif-tag "${EIF_TAG}" \
             ${EXTRA_ARGS})
 
@@ -151,36 +199,47 @@ jobs:
 
       - name: Layer run-eif.sh and add OCI labels
         run: |
+          CONFIG_PATH="chains/op/${{ env.CHAIN }}.yaml"
           BUILDCTX=$(mktemp -d)
           cp aws-nitro/op/run-eif.sh "$BUILDCTX/run-eif.sh"
           chmod +x "$BUILDCTX/run-eif.sh"
 
-          cat > "$BUILDCTX/Dockerfile" <<DOCKERFILE
-          FROM busybox:musl AS busybox
+          # Generate committed-params.json — baked into the outer image at /committed-params.json.
+          # run-eif.sh reads this file and sends it to the enclave for hash validation.
+          # The enclave checks: sha256(received JSON) == EXPECTED_COMMITTED_PARAMS_SHA256 (baked in EIF).
+          python3 scripts/op-config.py "${CONFIG_PATH}" committed-json > "$BUILDCTX/committed-params.json"
+          echo "Committed params JSON:"
+          cat "$BUILDCTX/committed-params.json"
 
-          FROM ${{ env.EIF_TAG }}
-          # The enclaver outer image is built from scratch — no shell or tools.
-          # Copy a static busybox and install its applets so run-eif.sh can use
-          # sh, nc, timeout, and kill.
-          COPY --from=busybox /bin/busybox /bin/busybox
-          RUN ["/bin/busybox", "--install", "-s", "/bin"]
-          COPY run-eif.sh /run-eif.sh
-          LABEL enclave.pcr0="${{ env.PCR0 }}"
-          LABEL enclave.pcr1="${{ env.PCR1 }}"
-          LABEL enclave.pcr2="${{ env.PCR2 }}"
-          LABEL enclave.hash="${{ env.ENCLAVE_HASH }}"
-          LABEL enclave.tag="${{ env.RESOLVED_TAG }}"
-          LABEL enclave.app-image="${{ env.APP_IMAGE }}"
-          LABEL enclave.app-image-pinned="${{ env.APP_IMAGE_PINNED }}"
-          LABEL enclave.tee-image="${{ env.TEE_IMAGE }}"
-          LABEL org.opencontainers.image.source="${{ github.server_url }}/${{ github.repository }}"
-          LABEL org.opencontainers.image.revision="${{ github.sha }}"
-          LABEL build.workflow.url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          ENTRYPOINT ["/run-eif.sh"]
-          DOCKERFILE
+          # Generate config OCI labels (committed + runtime defaults, secrets excluded).
+          python3 scripts/op-config.py "${CONFIG_PATH}" labels > /tmp/config-labels.txt
+
+          {
+            echo "FROM busybox:musl AS busybox"
+            echo ""
+            echo "FROM ${{ env.EIF_TAG }}"
+            echo "COPY --from=busybox /bin/busybox /bin/busybox"
+            echo 'RUN ["/bin/busybox", "--install", "-s", "/bin"]'
+            echo "COPY run-eif.sh /run-eif.sh"
+            echo "COPY committed-params.json /committed-params.json"
+            echo 'LABEL enclave.pcr0="${{ env.PCR0 }}"'
+            echo 'LABEL enclave.pcr1="${{ env.PCR1 }}"'
+            echo 'LABEL enclave.pcr2="${{ env.PCR2 }}"'
+            echo 'LABEL enclave.hash="${{ env.ENCLAVE_HASH }}"'
+            echo 'LABEL enclave.tag="${{ env.RESOLVED_TAG }}"'
+            echo 'LABEL enclave.chain="${{ env.CHAIN }}"'
+            echo 'LABEL enclave.app-image="${{ env.APP_IMAGE }}"'
+            echo 'LABEL enclave.app-image-pinned="${{ env.APP_IMAGE_PINNED }}"'
+            echo 'LABEL enclave.tee-image="${{ env.TEE_IMAGE }}"'
+            cat /tmp/config-labels.txt
+            echo 'LABEL org.opencontainers.image.source="${{ github.server_url }}/${{ github.repository }}"'
+            echo 'LABEL org.opencontainers.image.revision="${{ github.sha }}"'
+            echo 'LABEL build.workflow.url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"'
+            echo 'ENTRYPOINT ["/run-eif.sh"]'
+          } > "$BUILDCTX/Dockerfile"
 
           docker build -t "${{ env.EIF_TAG }}" "$BUILDCTX"
-          rm -rf "$BUILDCTX"
+          rm -rf "$BUILDCTX" /tmp/config-labels.txt
 
       - name: Push runner image
         if: github.event_name == 'workflow_dispatch'
@@ -192,6 +251,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| | |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Chain** | \`${{ env.CHAIN }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Tag** | \`${{ env.RESOLVED_TAG }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Runner image** | \`${{ env.EIF_TAG }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **App image (pinned)** | \`${{ env.APP_IMAGE_PINNED }}\` |" >> $GITHUB_STEP_SUMMARY
@@ -206,8 +266,13 @@ jobs:
           echo "| **PCR2** | \`${{ env.PCR2 }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Enclave hash (keccak)** | \`${{ env.ENCLAVE_HASH }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Config (from chains/op/${{ env.CHAIN }}.yaml)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Committed params (baked into EIF, affect PCR0) and runtime defaults are" >> $GITHUB_STEP_SUMMARY
+          echo "embedded as OCI labels. Run \`docker inspect ${{ env.EIF_TAG }}\` to view." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Deployment" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Pull and run \`${{ env.EIF_TAG }}\` — EIF is baked in." >> $GITHUB_STEP_SUMMARY
-          echo "**Required:** \`L1_RPC_URL\`, \`L2_RPC_URL\`, \`ROLLUP_RPC_URL\`, \`ESPRESSO_URL1\`, \`OP_BATCHER_PRIVATE_KEY\`, \`ESPRESSO_ATTESTATION_SERVICE_URL\`, \`EIGENDA_PROXY_URL\`." >> $GITHUB_STEP_SUMMARY
-          echo "**Optional:** \`ESPRESSO_URL2\` (defaults to ESPRESSO_URL1), \`ESPRESSO_LIGHT_CLIENT_ADDR\` (has a default address)." >> $GITHUB_STEP_SUMMARY
+          echo "**Required secrets:** \`L1_RPC_URL\`, \`L2_RPC_URL\`, \`ROLLUP_RPC_URL\`, \`ESPRESSO_URL1\`, \`OP_BATCHER_PRIVATE_KEY\`, \`ESPRESSO_ATTESTATION_SERVICE_URL\`, \`EIGENDA_PROXY_URL\`." >> $GITHUB_STEP_SUMMARY
+          echo "**Optional:** \`ESPRESSO_URL2\` (defaults to ESPRESSO_URL1), plus runtime tuning params — see \`config.runtime.*\` labels." >> $GITHUB_STEP_SUMMARY

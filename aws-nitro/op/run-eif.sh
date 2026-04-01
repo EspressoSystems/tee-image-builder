@@ -15,6 +15,16 @@
 
 set -e
 
+# Validate committed-params.json is present (baked into this image at build time).
+# This file is sent to the enclave so it can validate the committed config hash.
+COMMITTED_PARAMS_FILE="/committed-params.json"
+if [ ! -f "$COMMITTED_PARAMS_FILE" ]; then
+    echo "ERROR: $COMMITTED_PARAMS_FILE not found — image was not built correctly"
+    exit 1
+fi
+COMMITTED_PARAMS_JSON=$(cat "$COMMITTED_PARAMS_FILE")
+echo "Committed params loaded from ${COMMITTED_PARAMS_FILE}"
+
 # Required environment variables
 : ${L1_RPC_URL:?Error: L1_RPC_URL is required}
 : ${L2_RPC_URL:?Error: L2_RPC_URL is required}
@@ -98,6 +108,8 @@ echo "====================================="
 # a second consecutive NUL (empty string) signals end-of-args.
 # NOTE: private key is not logged here — enclave-entrypoint.bash redacts it.
 send_batcher_args() {
+    # TODO: add "--committed-params-json=${COMMITTED_PARAMS_JSON}" once
+    # op-batcher registers that flag upstream (optimism-espresso-integration).
     printf '%s\0' \
         "--l1-eth-rpc=$L1_RPC_URL" \
         "--l2-eth-rpc=$L2_RPC_URL" \
