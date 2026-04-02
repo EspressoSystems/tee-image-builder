@@ -165,16 +165,18 @@ jobs:
           echo "ENCLAVE_HASH=${ENCLAVE_HASH}" >> $GITHUB_ENV
           echo "PCR0 keccak hash: ${ENCLAVE_HASH}"
 
-      - name: Publish release assets
+      - name: Publish
         if: github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           RELEASE_TAG="${{ env.CHAIN }}-${{ env.NITRO_IMAGE_TAG }}"
+          RELEASE_URL="${{ github.server_url }}/${{ github.repository }}/releases/tag/${RELEASE_TAG}"
           BASE_URL="${{ github.server_url }}/${{ github.repository }}/releases/download/${RELEASE_TAG}"
-          echo "CONFIG_ASSET_URL=${BASE_URL}/committed-config.json" >> $GITHUB_ENV
+          CONFIG_URL="${BASE_URL}/committed-config.json"
+          echo "RELEASE_URL=${RELEASE_URL}" >> $GITHUB_ENV
 
-          # Generate machine-readable measurements file
+          # measurements.json — single source of truth for all verifiable values
           jq -n \
             --arg chain "${{ env.CHAIN }}" \
             --arg nitro_image "${{ env.NITRO_IMAGE_PATH }}" \
@@ -184,10 +186,12 @@ jobs:
             --arg pcr2 "${{ env.PCR2 }}" \
             --arg enclave_hash "${{ env.ENCLAVE_HASH }}" \
             --arg config_hash "${{ env.CONFIG_HASH }}" \
+            --arg config_url "${CONFIG_URL}" \
             --arg build_workflow "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             --arg git_sha "${{ github.sha }}" \
             '{
               chain: $chain,
+              "tee-type": "AWS Nitro (Arbitrum)",
               "nitro-image": $nitro_image,
               "runner-image": $runner_image,
               pcr0: $pcr0,
@@ -195,24 +199,28 @@ jobs:
               pcr2: $pcr2,
               "enclave-hash": $enclave_hash,
               "config-hash": $config_hash,
+              "config-url": $config_url,
               "build-workflow": $build_workflow,
               "git-sha": $git_sha
             }' > /tmp/measurements.json
 
+          # Release notes generated from measurements.json — no duplication
           {
             echo "## Chain: \`${{ env.CHAIN }}\`"
             echo ""
             echo "| | |"
             echo "|---|---|"
-            echo "| **TEE type** | AWS Nitro (Arbitrum) |"
-            echo "| **Nitro image** | \`${{ env.NITRO_IMAGE_PATH }}\` |"
-            echo "| **Runner image** | \`${{ env.EIF_TAG }}\` |"
-            echo "| **PCR0** | \`${{ env.PCR0 }}\` |"
-            echo "| **PCR1** | \`${{ env.PCR1 }}\` |"
-            echo "| **PCR2** | \`${{ env.PCR2 }}\` |"
-            echo "| **Enclave hash (keccak)** | \`${{ env.ENCLAVE_HASH }}\` |"
-            echo "| **Config hash** | \`${{ env.CONFIG_HASH }}\` |"
-            echo "| **Build workflow** | ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} |"
+            jq -r '
+              "| **TEE type** | " + .["tee-type"] + " |",
+              "| **Nitro image** | `" + .["nitro-image"] + "` |",
+              "| **Runner image** | `" + .["runner-image"] + "` |",
+              "| **PCR0** | `" + .pcr0 + "` |",
+              "| **PCR1** | `" + .pcr1 + "` |",
+              "| **PCR2** | `" + .pcr2 + "` |",
+              "| **Enclave hash (keccak)** | `" + .["enclave-hash"] + "` |",
+              "| **Config hash** | `" + .["config-hash"] + "` |",
+              "| **Build workflow** | " + .["build-workflow"] + " |"
+            ' /tmp/measurements.json
             echo ""
             echo "### Assets"
             echo "- \`committed-config.json\` — full public config with placeholders for private values"
@@ -223,26 +231,17 @@ jobs:
             --title "[Nitro/Arb] ${{ env.CHAIN }} @ ${{ env.NITRO_IMAGE_TAG }}" \
             --notes-file /tmp/release-notes.md \
             2>/dev/null || true
-
           gh release edit "${RELEASE_TAG}" \
             --title "[Nitro/Arb] ${{ env.CHAIN }} @ ${{ env.NITRO_IMAGE_TAG }}" \
             --notes-file /tmp/release-notes.md
-
           gh release upload "${RELEASE_TAG}" \
             "${{ env.CONFIG_PATH }}#committed-config.json" \
             /tmp/measurements.json \
             --clobber
 
-          echo "Release published: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${RELEASE_TAG}"
-
-      - name: Add OCI labels and push
-        if: github.event_name == 'workflow_dispatch'
-        run: |
+          # OCI labels — embed key values and link to release for full details
           BUILDCTX=$(mktemp -d)
           python3 scripts/nitro-config.py "${{ env.CONFIG_PATH }}" labels > /tmp/config-labels.txt
-
-          # enclaver-batch-poster is the local image produced by the previous step
-          # (target name defined in aws-nitro/nitro/enclaver/enclaver.yaml).
           {
             echo "FROM enclaver-batch-poster"
             echo 'LABEL enclave.pcr0="${{ env.PCR0 }}"'
@@ -252,16 +251,15 @@ jobs:
             echo 'LABEL enclave.chain="${{ env.CHAIN }}"'
             echo 'LABEL enclave.nitro-image="${{ env.NITRO_IMAGE_PATH }}"'
             echo 'LABEL enclave.config-hash="${{ env.CONFIG_HASH }}"'
-            echo 'LABEL enclave.config-url="${{ env.CONFIG_ASSET_URL }}"'
+            echo "LABEL enclave.config-url=\"${CONFIG_URL}\""
+            echo "LABEL enclave.release-url=\"${RELEASE_URL}\""
             cat /tmp/config-labels.txt
             echo 'LABEL org.opencontainers.image.source="${{ github.server_url }}/${{ github.repository }}"'
             echo 'LABEL org.opencontainers.image.revision="${{ github.sha }}"'
             echo 'LABEL build.workflow.url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"'
           } > "$BUILDCTX/Dockerfile"
-
           docker build -t "${{ env.EIF_TAG }}" "$BUILDCTX"
-          rm -rf "$BUILDCTX" /tmp/config-labels.txt
-
+          rm -rf "$BUILDCTX" /tmp/config-labels.txt /tmp/release-notes.md /tmp/measurements.json
           docker push "${{ env.EIF_TAG }}"
 
       - name: Summary
@@ -271,16 +269,10 @@ jobs:
           echo "| | |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
           echo "| **Chain** | \`${{ env.CHAIN }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Nitro image** | \`${{ env.NITRO_IMAGE_PATH }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Runner image** | \`${{ env.EIF_TAG }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **PCR0** | \`${{ env.PCR0 }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **PCR1** | \`${{ env.PCR1 }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **PCR2** | \`${{ env.PCR2 }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Enclave hash (keccak)** | \`${{ env.ENCLAVE_HASH }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Config hash** | \`${{ env.CONFIG_HASH }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Config hash auto-computed from \`${{ env.CONFIG_PATH }}\`." >> $GITHUB_STEP_SUMMARY
-          if [ -n "${{ env.CONFIG_ASSET_URL }}" ]; then
-            echo "| **Config URL** | ${{ env.CONFIG_ASSET_URL }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **PCR0** | \`${{ env.PCR0 }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Enclave hash (keccak)** | \`${{ env.ENCLAVE_HASH }}\` |" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ env.RELEASE_URL }}" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Full details: ${{ env.RELEASE_URL }}" >> $GITHUB_STEP_SUMMARY
           fi
-          echo "Run \`docker inspect ${{ env.EIF_TAG }}\` to view all labels." >> $GITHUB_STEP_SUMMARY
