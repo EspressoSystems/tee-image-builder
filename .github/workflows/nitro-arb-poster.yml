@@ -204,6 +204,7 @@ jobs:
             echo ""
             echo "| | |"
             echo "|---|---|"
+            echo "| **TEE type** | AWS Nitro (Arbitrum) |"
             echo "| **Nitro image** | \`${{ env.NITRO_IMAGE_PATH }}\` |"
             echo "| **Runner image** | \`${{ env.EIF_TAG }}\` |"
             echo "| **PCR0** | \`${{ env.PCR0 }}\` |"
@@ -219,11 +220,13 @@ jobs:
           } > /tmp/release-notes.md
 
           gh release create "${RELEASE_TAG}" \
-            --title "${{ env.CHAIN }} @ ${{ env.NITRO_IMAGE_TAG }}" \
+            --title "[Nitro/Arb] ${{ env.CHAIN }} @ ${{ env.NITRO_IMAGE_TAG }}" \
             --notes-file /tmp/release-notes.md \
             2>/dev/null || true
 
-          gh release edit "${RELEASE_TAG}" --notes-file /tmp/release-notes.md
+          gh release edit "${RELEASE_TAG}" \
+            --title "[Nitro/Arb] ${{ env.CHAIN }} @ ${{ env.NITRO_IMAGE_TAG }}" \
+            --notes-file /tmp/release-notes.md
 
           gh release upload "${RELEASE_TAG}" \
             "${{ env.CONFIG_PATH }}#committed-config.json" \
