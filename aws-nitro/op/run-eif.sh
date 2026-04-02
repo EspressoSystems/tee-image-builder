@@ -48,7 +48,6 @@ ALTDA_DA_SERVICE="${ALTDA_DA_SERVICE:-false}"
 ALTDA_VERIFY_ON_READ="${ALTDA_VERIFY_ON_READ:-true}"
 ALTDA_PUT_TIMEOUT="${ALTDA_PUT_TIMEOUT:-0}"
 ALTDA_GET_TIMEOUT="${ALTDA_GET_TIMEOUT:-0}"
-THROTTLE_THRESHOLD="${THROTTLE_THRESHOLD:-1000000}"
 POLL_INTERVAL="${POLL_INTERVAL:-1s}"
 NUM_CONFIRMATIONS="${NUM_CONFIRMATIONS:-8}"
 RESUBMISSION_TIMEOUT="${RESUBMISSION_TIMEOUT:-30s}"
@@ -126,7 +125,7 @@ send_batcher_args() {
         "--num-confirmations=$NUM_CONFIRMATIONS" \
         "--resubmission-timeout=$RESUBMISSION_TIMEOUT" \
         "--rpc.enable-admin=$RPC_ENABLE_ADMIN" \
-        "--throttle-threshold=$THROTTLE_THRESHOLD" \
+        "--throttle.unsafe-da-bytes-lower-threshold=0" \
         "--max-channel-duration=$MAX_CHANNEL_DURATION" \
         "--target-num-frames=$TARGET_NUM_FRAMES" \
         "--max-l1-tx-size-bytes=$MAX_L1_TX_SIZE_BYTES" \
