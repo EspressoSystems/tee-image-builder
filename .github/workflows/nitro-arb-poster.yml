@@ -80,7 +80,7 @@ jobs:
 
       - name: Compute config hash
         run: |
-          # Computed with jq — identical to the del() in aws-nitro-entrypoint.sh.
+          # Computed with jq. Identical to the del() in aws-nitro-entrypoint.sh.
           # Private fields (DA aggregator URLs, celestia URL) are excluded from the hash
           # and injected at runtime from AWS Secrets Manager.
           CONFIG_HASH=$(jq -cS 'del(
@@ -128,7 +128,7 @@ jobs:
 
       - name: Install enclaver
         run: |
-          # Verify SHA256 before extracting — a malicious binary could produce a
+          # Verify SHA256 before extracting. A malicious binary could produce a
           # fraudulent EIF with a fake PCR0.
           ENCLAVER_URL="https://github.com/enclaver-io/enclaver/releases/download/v0.5.0/enclaver-linux-x86_64-v0.5.0.tar.gz"
           ENCLAVER_SHA256="c1a09f9dc4c687bf321bbfa0cf42451a3b1618457e21c39498884cd3bce0b3e3"
@@ -176,7 +176,7 @@ jobs:
           CONFIG_URL="${BASE_URL}/committed-config.json"
           echo "RELEASE_URL=${RELEASE_URL}" >> $GITHUB_ENV
 
-          # measurements.json — single source of truth for all verifiable values
+          # measurements.json. Source of truth for all verifiable values
           jq -n \
             --arg chain "${{ env.CHAIN }}" \
             --arg nitro_image "${{ env.NITRO_IMAGE_PATH }}" \
@@ -204,7 +204,7 @@ jobs:
               "git-sha": $git_sha
             }' > /tmp/measurements.json
 
-          # Release notes generated from measurements.json — no duplication
+          # Release notes generated from measurements.json
           {
             echo "## Chain: \`${{ env.CHAIN }}\`"
             echo ""
@@ -239,7 +239,7 @@ jobs:
             /tmp/measurements.json \
             --clobber
 
-          # OCI labels — embed key values and link to release for full details
+          # OCI labels. Embed key values and link to release for full details
           BUILDCTX=$(mktemp -d)
           python3 scripts/nitro-config.py "${{ env.CONFIG_PATH }}" labels > /tmp/config-labels.txt
           {
