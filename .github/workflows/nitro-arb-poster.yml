@@ -165,25 +165,72 @@ jobs:
           echo "ENCLAVE_HASH=${ENCLAVE_HASH}" >> $GITHUB_ENV
           echo "PCR0 keccak hash: ${ENCLAVE_HASH}"
 
-      - name: Publish config as release asset
+      - name: Publish release assets
         if: github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           RELEASE_TAG="${{ env.CHAIN }}-${{ env.NITRO_IMAGE_TAG }}"
-          CONFIG_ASSET_URL="${{ github.server_url }}/${{ github.repository }}/releases/download/${RELEASE_TAG}/committed-config.json"
-          echo "CONFIG_ASSET_URL=${CONFIG_ASSET_URL}" >> $GITHUB_ENV
+          BASE_URL="${{ github.server_url }}/${{ github.repository }}/releases/download/${RELEASE_TAG}"
+          echo "CONFIG_ASSET_URL=${BASE_URL}/committed-config.json" >> $GITHUB_ENV
+
+          # Generate machine-readable measurements file
+          jq -n \
+            --arg chain "${{ env.CHAIN }}" \
+            --arg nitro_image "${{ env.NITRO_IMAGE_PATH }}" \
+            --arg runner_image "${{ env.EIF_TAG }}" \
+            --arg pcr0 "${{ env.PCR0 }}" \
+            --arg pcr1 "${{ env.PCR1 }}" \
+            --arg pcr2 "${{ env.PCR2 }}" \
+            --arg enclave_hash "${{ env.ENCLAVE_HASH }}" \
+            --arg config_hash "${{ env.CONFIG_HASH }}" \
+            --arg build_workflow "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --arg git_sha "${{ github.sha }}" \
+            '{
+              chain: $chain,
+              "nitro-image": $nitro_image,
+              "runner-image": $runner_image,
+              pcr0: $pcr0,
+              pcr1: $pcr1,
+              pcr2: $pcr2,
+              "enclave-hash": $enclave_hash,
+              "config-hash": $config_hash,
+              "build-workflow": $build_workflow,
+              "git-sha": $git_sha
+            }' > /tmp/measurements.json
+
+          {
+            echo "## Chain: \`${{ env.CHAIN }}\`"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| **Nitro image** | \`${{ env.NITRO_IMAGE_PATH }}\` |"
+            echo "| **Runner image** | \`${{ env.EIF_TAG }}\` |"
+            echo "| **PCR0** | \`${{ env.PCR0 }}\` |"
+            echo "| **PCR1** | \`${{ env.PCR1 }}\` |"
+            echo "| **PCR2** | \`${{ env.PCR2 }}\` |"
+            echo "| **Enclave hash (keccak)** | \`${{ env.ENCLAVE_HASH }}\` |"
+            echo "| **Config hash** | \`${{ env.CONFIG_HASH }}\` |"
+            echo "| **Build workflow** | ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} |"
+            echo ""
+            echo "### Assets"
+            echo "- \`committed-config.json\` — full public config with placeholders for private values"
+            echo "- \`measurements.json\` — machine-readable PCR values and hashes for programmatic verification"
+          } > /tmp/release-notes.md
 
           gh release create "${RELEASE_TAG}" \
             --title "${{ env.CHAIN }} @ ${{ env.NITRO_IMAGE_TAG }}" \
-            --notes "Committed config for chain \`${{ env.CHAIN }}\` built with \`${{ env.NITRO_IMAGE_PATH }}\`." \
+            --notes-file /tmp/release-notes.md \
             2>/dev/null || true
+
+          gh release edit "${RELEASE_TAG}" --notes-file /tmp/release-notes.md
 
           gh release upload "${RELEASE_TAG}" \
             "${{ env.CONFIG_PATH }}#committed-config.json" \
+            /tmp/measurements.json \
             --clobber
 
-          echo "Config published: ${CONFIG_ASSET_URL}"
+          echo "Release published: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${RELEASE_TAG}"
 
       - name: Add OCI labels and push
         if: github.event_name == 'workflow_dispatch'
