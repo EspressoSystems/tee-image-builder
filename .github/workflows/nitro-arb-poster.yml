@@ -56,7 +56,7 @@ jobs:
   build-eif:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -165,18 +165,36 @@ jobs:
           echo "ENCLAVE_HASH=${ENCLAVE_HASH}" >> $GITHUB_ENV
           echo "PCR0 keccak hash: ${ENCLAVE_HASH}"
 
+      - name: Publish config as release asset
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RELEASE_TAG="${{ env.CHAIN }}-${{ env.NITRO_IMAGE_TAG }}"
+          CONFIG_ASSET_URL="${{ github.server_url }}/${{ github.repository }}/releases/download/${RELEASE_TAG}/committed-config.json"
+          echo "CONFIG_ASSET_URL=${CONFIG_ASSET_URL}" >> $GITHUB_ENV
+
+          gh release create "${RELEASE_TAG}" \
+            --title "${{ env.CHAIN }} @ ${{ env.NITRO_IMAGE_TAG }}" \
+            --notes "Committed config for chain \`${{ env.CHAIN }}\` built with \`${{ env.NITRO_IMAGE_PATH }}\`." \
+            2>/dev/null || true
+
+          gh release upload "${RELEASE_TAG}" \
+            "${{ env.CONFIG_PATH }}#committed-config.json" \
+            --clobber
+
+          echo "Config published: ${CONFIG_ASSET_URL}"
+
       - name: Add OCI labels and push
         if: github.event_name == 'workflow_dispatch'
         run: |
           BUILDCTX=$(mktemp -d)
-          cp "${{ env.CONFIG_PATH }}" "$BUILDCTX/committed-config.json"
           python3 scripts/nitro-config.py "${{ env.CONFIG_PATH }}" labels > /tmp/config-labels.txt
 
           # enclaver-batch-poster is the local image produced by the previous step
           # (target name defined in aws-nitro/nitro/enclaver/enclaver.yaml).
           {
             echo "FROM enclaver-batch-poster"
-            echo "COPY committed-config.json /committed-config.json"
             echo 'LABEL enclave.pcr0="${{ env.PCR0 }}"'
             echo 'LABEL enclave.pcr1="${{ env.PCR1 }}"'
             echo 'LABEL enclave.pcr2="${{ env.PCR2 }}"'
@@ -184,6 +202,7 @@ jobs:
             echo 'LABEL enclave.chain="${{ env.CHAIN }}"'
             echo 'LABEL enclave.nitro-image="${{ env.NITRO_IMAGE_PATH }}"'
             echo 'LABEL enclave.config-hash="${{ env.CONFIG_HASH }}"'
+            echo 'LABEL enclave.config-url="${{ env.CONFIG_ASSET_URL }}"'
             cat /tmp/config-labels.txt
             echo 'LABEL org.opencontainers.image.source="${{ github.server_url }}/${{ github.repository }}"'
             echo 'LABEL org.opencontainers.image.revision="${{ github.sha }}"'
@@ -211,4 +230,7 @@ jobs:
           echo "| **Config hash** | \`${{ env.CONFIG_HASH }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Config hash auto-computed from \`${{ env.CONFIG_PATH }}\`." >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ env.CONFIG_ASSET_URL }}" ]; then
+            echo "| **Config URL** | ${{ env.CONFIG_ASSET_URL }} |" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "Run \`docker inspect ${{ env.EIF_TAG }}\` to view all labels." >> $GITHUB_STEP_SUMMARY
