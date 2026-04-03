@@ -48,11 +48,9 @@
         "max-retries": 5
       },
       "parent-chain-wallet": {
-        "private-key": ""
+        "private-key": "PLACEHOLDER"
       },
       "hotshot-urls": [
-        "https://query.decaf.testnet.espresso.network/",
-        "https://query.decaf.testnet.espresso.network/",
         "https://query.decaf.testnet.espresso.network/"
       ],
       "espresso-tee-type": "NITRO",
@@ -81,17 +79,17 @@
       "parent-chain-node-url": "http://arbitrum.testnets.espresso.private:8545",
       "rest-aggregator": {
         "enable": true,
-        "urls": "<REST_AGGREGATOR_URL>"
+        "urls": "PLACEHOLDER"
       },
       "rpc-aggregator": {
         "enable": true,
         "assumed-honest": 1,
-        "backends": "<RPC_AGGREGATOR_BACKENDS_JSON>"
+        "backends": "PLACEHOLDER"
       }
     },
     "celestia-cfg": {
       "enable": true,
-      "url": "<CELESTIA_URL>"
+      "url": "PLACEHOLDER"
     },
     "parent-chain-reader": {
       "poll-only": true

@@ -6,7 +6,7 @@
 #
 #   aws-nitro-arb-poster:<chain>-<tag>  — self-contained runner (what Terraform/ECS deploys).
 #
-# Config source of truth: chains/nitro/<chain>.json
+# Config source of truth: chain-configs/nitro/<chain>.json
 #   Config hash is auto-computed with jq — identical to aws-nitro-entrypoint.sh.
 #   Excluded fields (not part of the hash): private-key, parent-chain URL,
 #   txns intervals, data-availability, and celestia-cfg.
@@ -32,7 +32,7 @@ on:
       chain:
         description: >
           Arbitrum chain to build, e.g. rari-testnet.
-          Selects chains/nitro/<chain>.json for config and hash computation.
+          Selects chain-configs/nitro/<chain>.json for config and hash computation.
         required: true
       nitro_node_image_path:
         type: string
@@ -72,7 +72,7 @@ jobs:
           echo "NITRO_IMAGE_PATH=${NITRO_IMAGE_PATH}" >> $GITHUB_ENV
           echo "NITRO_IMAGE_TAG=${NITRO_TAG}" >> $GITHUB_ENV
 
-          CONFIG_PATH="chains/nitro/${{ env.CHAIN }}.json"
+          CONFIG_PATH="chain-configs/nitro/${{ env.CHAIN }}.json"
           echo "CONFIG_PATH=${CONFIG_PATH}" >> $GITHUB_ENV
 
           echo "Using nitro image: ${NITRO_IMAGE_PATH}"
