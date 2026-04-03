@@ -241,7 +241,6 @@ jobs:
 
           # OCI labels. Embed key values and link to release for full details
           BUILDCTX=$(mktemp -d)
-          python3 scripts/nitro-config.py "${{ env.CONFIG_PATH }}" labels > /tmp/config-labels.txt
           {
             echo "FROM enclaver-batch-poster"
             echo 'LABEL enclave.pcr0="${{ env.PCR0 }}"'
@@ -253,13 +252,12 @@ jobs:
             echo 'LABEL enclave.config-hash="${{ env.CONFIG_HASH }}"'
             echo "LABEL enclave.config-url=\"${CONFIG_URL}\""
             echo "LABEL enclave.release-url=\"${RELEASE_URL}\""
-            cat /tmp/config-labels.txt
             echo 'LABEL org.opencontainers.image.source="${{ github.server_url }}/${{ github.repository }}"'
             echo 'LABEL org.opencontainers.image.revision="${{ github.sha }}"'
             echo 'LABEL build.workflow.url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"'
           } > "$BUILDCTX/Dockerfile"
           docker build -t "${{ env.EIF_TAG }}" "$BUILDCTX"
-          rm -rf "$BUILDCTX" /tmp/config-labels.txt /tmp/release-notes.md /tmp/measurements.json
+          rm -rf "$BUILDCTX" /tmp/release-notes.md /tmp/measurements.json
           docker push "${{ env.EIF_TAG }}"
 
       - name: Summary
