@@ -1,5 +1,5 @@
 #!/bin/bash
-# Pre-commit hook to prevent committing private keys
+# Pre-commit hook to prevent committing private keys and sensitive URLs
 # Run this automatically before each commit
 
 staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep "\.json$" || true)
@@ -18,11 +18,42 @@ for file in $staged_files; do
             echo ""
             exit 1
         fi
-        
+
         # Check for suspiciously long alphanumeric strings
         if git diff --cached "$file" | grep -E '^\+.*"private-key"\s*:\s*"[a-zA-Z0-9]{50,}"' > /dev/null; then
             echo ""
             echo "⚠️  WARNING: Suspicious private key format in $file"
+            echo "   Use 'PLACEHOLDER' instead"
+            echo ""
+            exit 1
+        fi
+
+        # Check sensitive URL/backend fields must be PLACEHOLDER
+        result=$(git show ":$file" | python3 -c "
+            import json, sys
+
+            try:
+                data = json.load(sys.stdin)
+            except json.JSONDecodeError:
+                sys.exit(0)
+
+            node = data.get('node', {})
+
+            checks = [
+                ('celestia-cfg.url', node.get('celestia-cfg', {}).get('url')),
+                ('data-availability.rest-aggregator.urls', node.get('data-availability', {}).get('rest-aggregator', {}).get('urls')),
+                ('data-availability.rpc-aggregator.backends', node.get('data-availability', {}).get('rpc-aggregator', {}).get('backends')),
+            ]
+
+            for name, value in checks:
+                if value and value != 'PLACEHOLDER':
+                    print(name)
+                    sys.exit(1)
+        " 2>/dev/null)
+
+        if [ $? -ne 0 ]; then
+            echo ""
+            echo "❌ ERROR: Sensitive field '$result' contains a real value in $file!"
             echo "   Use 'PLACEHOLDER' instead"
             echo ""
             exit 1
