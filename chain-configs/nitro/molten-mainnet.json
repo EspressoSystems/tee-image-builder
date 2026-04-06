@@ -62,7 +62,7 @@
       },
       "rpc-aggregator": {
         "assumed-honest": 1,
-        "backends": "PLACEHOLDER,
+        "backends": "PLACEHOLDER",
         "enable": true
       },
       "sequencer-inbox-address": "0x0fFe9ACC296ddd4De5F616Aa482C99fA4b41A3E2"
