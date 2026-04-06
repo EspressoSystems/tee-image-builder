@@ -1,0 +1,125 @@
+{
+  "chain": {
+    "info-json": "[{\"chain-id\":1918988905,\"parent-chain-id\":421614,\"chain-name\":\"rari-testnet\",\"chain-config\":{\"chainId\":1918988905,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":true,\"InitialArbOSVersion\":10,\"InitialChainOwner\":\"0x46c7cbced66dd5eb31e5a31fef689090d9db8d66\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0x55f0a866E9A5B59Eab0269D62d121BC0978a4346\",\"inbox\":\"0xb6534cB24b925b58dfD811a0090f24C7aD52cA78\",\"sequencer-inbox\":\"0xf0d96B3a783F04620D5CBbf2829E70CEe396403F\",\"rollup\":\"0x2EeDc7b995267aa1060587Ff2585690C204E7e5c\",\"validator-utils\":\"0x2dAb9011cf19573772F92dfa65c275d679ae9cc8\",\"validator-wallet-creator\":\"0xe911FadA3EE53dCCe71102b4570e68deBd760F89\",\"deployed-at\":1640371}}]",
+    "name": "rari-testnet"
+  },
+  "parent-chain": {
+    "connection": {
+      "url": "http://arbitrum.testnets.espresso.private:8545"
+    }
+  },
+  "http": {
+    "addr": "0.0.0.0",
+    "port": 8545,
+    "vhosts": "*",
+    "corsdomain": "*",
+    "api": [
+      "eth",
+      "net",
+      "web3",
+      "arb",
+      "debug",
+      "txpool"
+    ]
+  },
+  "ws": {
+    "addr": "0.0.0.0",
+    "port": 8546,
+    "api": [
+      "eth",
+      "net",
+      "web3",
+      "arb",
+      "debug",
+      "txpool"
+    ]
+  },
+  "node": {
+    "sequencer": false,
+    "delayed-sequencer": {
+      "enable": false
+    },
+    "batch-poster": {
+      "max-size": 90000,
+      "enable": true,
+      "poll-interval": "60s",
+      "espresso-register-signer-config": {
+        "max-base-fee": 8000000000,
+        "max-retries": 5
+      },
+      "parent-chain-wallet": {
+        "private-key": "PLACEHOLDER"
+      },
+      "hotshot-urls": [
+        "https://query.decaf.testnet.espresso.network/"
+      ],
+      "espresso-tee-type": "NITRO",
+      "light-client-address": "0x08d16cb8243b3e172dddcdf1a1a5dacca1cd7098",
+      "espresso-txns-polling-interval": "250ms",
+      "max-delay": "1h0m0s",
+      "max-empty-batch-delay": "10h0m0s",
+      "l1-block-bound": "finalized",
+      "resubmit-espresso-tx-deadline": "2m",
+      "hotshot-block": 5580935,
+      "hotshot-first-posting-block": 217622133,
+      "address-monitor-start-l1": 217622133
+    },
+    "staker": {
+      "enable": false
+    },
+    "dangerous": {
+      "no-sequencer-coordinator": true
+    },
+    "seq-coordinator": {
+      "enable": false
+    },
+    "data-availability": {
+      "enable": true,
+      "sequencer-inbox-address": "0xf0d96B3a783F04620D5CBbf2829E70CEe396403F",
+      "parent-chain-node-url": "http://arbitrum.testnets.espresso.private:8545",
+      "rest-aggregator": {
+        "enable": true,
+        "urls": "PLACEHOLDER"
+      },
+      "rpc-aggregator": {
+        "enable": true,
+        "assumed-honest": 1,
+        "backends": "PLACEHOLDER"
+      }
+    },
+    "celestia-cfg": {
+      "enable": true,
+      "url": "PLACEHOLDER"
+    },
+    "parent-chain-reader": {
+      "poll-only": true
+    },
+    "da-preference": [
+      "celestia",
+      "anytrust"
+    ],
+    "feed": {
+      "input": {
+        "url": [
+          "wss://rari-testnet.calderachain.xyz/feed"
+        ]
+      },
+      "output": {
+        "enable": false,
+        "port": 9642
+      }
+    }
+  },
+  "execution": {
+    "caching": {
+      "archive": false
+    },
+    "sequencer": {
+      "enable": false
+    },
+    "forwarding-target": "null"
+  },
+  "persistent": {
+    "chain": "local"
+  }
+}
