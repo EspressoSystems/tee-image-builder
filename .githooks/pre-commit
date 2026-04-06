@@ -28,6 +28,15 @@ for file in $staged_files; do
             exit 1
         fi
 
+        # Check for Alchemy or Infura URLs
+        if git diff --cached "$file" | grep -iE '^\+.*"[^"]*":\s*"[^"]*((alchemy|infura)\.[^"]+)"' > /dev/null; then
+            echo ""
+            echo "❌ ERROR: Alchemy or Infura URL detected in $file!"
+            echo "   Use 'PLACEHOLDER' instead of provider URLs"
+            echo ""
+            exit 1
+        fi
+
         # Check sensitive URL/backend fields must be PLACEHOLDER
         result=$(git show ":$file" | python3 -c "
             import json, sys
