@@ -35,7 +35,7 @@
       "max-delay": "240m0s",
       "max-size": 1800000,
       "parent-chain-wallet": {
-        "private-key": "PLACEHOLDER"
+        "private-key": "PLACE_HOLDER"
       },
       "poll-interval": "60s",
       "reorg-resistance-margin": 0,
@@ -43,7 +43,7 @@
     },
     "celestia-cfg": {
       "enable": true,
-      "url": "PLACEHOLDER"
+      "url": "PLACE_HOLDER"
     },
     "da-preference": [
       "celestia",
@@ -58,11 +58,11 @@
       "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/42161",
       "rest-aggregator": {
         "enable": true,
-        "urls": "PLACEHOLDER"
+        "urls": "PLACE_HOLDER"
       },
       "rpc-aggregator": {
         "assumed-honest": 1,
-        "backends": "PLACEHOLDER",
+        "backends": "PLACE_HOLDER",
         "enable": true
       },
       "sequencer-inbox-address": "0x0fFe9ACC296ddd4De5F616Aa482C99fA4b41A3E2"
@@ -72,17 +72,20 @@
     },
     "espresso": {
       "batch-poster": {
-        "hotshot-first-posting-block": 449708208,
+        "attestation-service-url": "http://arb-verifier.mainnets.espresso.private:8080",
+        "hotshot-first-posting-block": 450000000,
         "hotshot-url": "https://cache.main.net.espresso.network/",
+        "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
         "resubmit-espresso-tx-deadline": "2m",
         "tee-type": "NITRO",
         "txns-monitoring-interval": "1s",
         "txns-resubmission-interval": "10s"
       },
       "streamer": {
-        "address-monitor-start-l1": 449708208,
-        "hotshot-block": 12705604,
-        "txns-polling-interval": "1s"
+        "address-monitor-start-l1": 450000000,
+        "hotshot-block": 12776840,
+        "txns-polling-interval": "1s",
+  	    "address-monitor-step": 10000
       }
     },
     "feed": {
