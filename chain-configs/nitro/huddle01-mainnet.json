@@ -85,9 +85,9 @@
         "hotshot-first-posting-block": 450742925,
         "hotshot-url": "https://cache.main.net.espresso.network/",
         "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
-        "tee-type": "NITRO",
-        "espresso-tee-verifier-address": "0x2E01FA49cB3C3Ff09a5908165A5b5cB7f5cDF271",
         "resubmit-espresso-tx-deadline": "2m"
+        "tee-type": "NITRO",
+        "txns-monitoring-interval": "1s",
       },
       "streamer": {
         "address-monitor-start-l1": 450742925,
