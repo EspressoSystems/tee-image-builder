@@ -34,73 +34,50 @@ echo "Committed params loaded from ${COMMITTED_PARAMS_FILE}"
 : ${ESPRESSO_ATTESTATION_SERVICE_URL:?Error: ESPRESSO_ATTESTATION_SERVICE_URL is required}
 : ${EIGENDA_PROXY_URL:?Error: EIGENDA_PROXY_URL is required}
 
-# Optional configuration with defaults
+# Committed params — validated against enclave hash once enforcement is wired up
+: ${ESPRESSO_LIGHT_CLIENT_ADDR:?Error: ESPRESSO_LIGHT_CLIENT_ADDR is required}
+: ${DATA_AVAILABILITY_TYPE:?Error: DATA_AVAILABILITY_TYPE is required}
+: ${COMPRESSION_ALGO:?Error: COMPRESSION_ALGO is required}
+: ${MAX_CHANNEL_DURATION:?Error: MAX_CHANNEL_DURATION is required}
+: ${TARGET_NUM_FRAMES:?Error: TARGET_NUM_FRAMES is required}
+: ${MAX_L1_TX_SIZE_BYTES:?Error: MAX_L1_TX_SIZE_BYTES is required}
+: ${ALTDA_DA_SERVICE:?Error: ALTDA_DA_SERVICE is required}
+: ${ALTDA_VERIFY_ON_READ:?Error: ALTDA_VERIFY_ON_READ is required}
+: ${ALTDA_MAX_CONCURRENT_DA_REQUESTS:?Error: ALTDA_MAX_CONCURRENT_DA_REQUESTS is required}
+: ${ALTDA_PUT_TIMEOUT:?Error: ALTDA_PUT_TIMEOUT is required}
+: ${ALTDA_GET_TIMEOUT:?Error: ALTDA_GET_TIMEOUT is required}
+: ${SUB_SAFETY_MARGIN:?Error: SUB_SAFETY_MARGIN is required}
+: ${TXMGR_MIN_TIP_CAP:?Error: TXMGR_MIN_TIP_CAP is required}
+: ${MAX_PENDING_TX:?Error: MAX_PENDING_TX is required}
+: ${RPC_ENABLE_ADMIN:?Error: RPC_ENABLE_ADMIN is required}
+
 ESPRESSO_URL2="${ESPRESSO_URL2:-$ESPRESSO_URL1}"
-ESPRESSO_ORIGIN_HEIGHT_ESPRESSO="${ESPRESSO_ORIGIN_HEIGHT_ESPRESSO:-0}"
-ESPRESSO_ORIGIN_HEIGHT_L2="${ESPRESSO_ORIGIN_HEIGHT_L2:-0}"
 ENCLAVE_DEBUG="${ENCLAVE_DEBUG:-false}"
-MAX_CHANNEL_DURATION="${MAX_CHANNEL_DURATION:-0}"
-TARGET_NUM_FRAMES="${TARGET_NUM_FRAMES:-1}"
-MAX_L1_TX_SIZE_BYTES="${MAX_L1_TX_SIZE_BYTES:-120000}"
-DATA_AVAILABILITY_TYPE="${DATA_AVAILABILITY_TYPE:-auto}"
-ALTDA_MAX_CONCURRENT_DA_REQUESTS="${ALTDA_MAX_CONCURRENT_DA_REQUESTS:-1}"
-ALTDA_DA_SERVICE="${ALTDA_DA_SERVICE:-false}"
-ALTDA_VERIFY_ON_READ="${ALTDA_VERIFY_ON_READ:-true}"
-ALTDA_PUT_TIMEOUT="${ALTDA_PUT_TIMEOUT:-0}"
-ALTDA_GET_TIMEOUT="${ALTDA_GET_TIMEOUT:-0}"
-POLL_INTERVAL="${POLL_INTERVAL:-1s}"
-THROTTLE_UNSAFE_DA_BYTES_LOWER_THRESHOLD="${THROTTLE_UNSAFE_DA_BYTES_LOWER_THRESHOLD:-0}"
-NUM_CONFIRMATIONS="${NUM_CONFIRMATIONS:-8}"
-RESUBMISSION_TIMEOUT="${RESUBMISSION_TIMEOUT:-30s}"
-RPC_ENABLE_ADMIN="${RPC_ENABLE_ADMIN:-false}"
-ESPRESSO_POLL_INTERVAL="${ESPRESSO_POLL_INTERVAL:-1s}"
-COMPRESSION_ALGO="${COMPRESSION_ALGO:-zlib}"
-SUB_SAFETY_MARGIN="${SUB_SAFETY_MARGIN:-10}"
-TXMGR_MIN_TIP_CAP="${TXMGR_MIN_TIP_CAP:-1.0}"
-MAX_PENDING_TX="${MAX_PENDING_TX:-32}"
-
-# Get light client address from env var or use default
-if [ -n "$ESPRESSO_LIGHT_CLIENT_ADDR" ]; then
-    echo "Using ESPRESSO_LIGHT_CLIENT_ADDR from environment variable"
-else
-    # Decaf light client address for ETH Sepolia
-    ESPRESSO_LIGHT_CLIENT_ADDR="0x303872bb82a191771321d4828888920100d0b3e4"
-    echo "ESPRESSO_LIGHT_CLIENT_ADDR not set, using default"
-fi
-
-# Override OP_BATCHER_ESPRESSO_LIGHT_CLIENT_ADDR so the batcher's env var matches,
-# preventing any outer deployment env from leaking a stale value into the enclave.
-export OP_BATCHER_ESPRESSO_LIGHT_CLIENT_ADDR="$ESPRESSO_LIGHT_CLIENT_ADDR"
 
 echo "=== Enclave Batcher Configuration ==="
 echo "L1 RPC URL: $L1_RPC_URL"
 echo "L2 RPC URL: $L2_RPC_URL"
 echo "Rollup RPC URL: $ROLLUP_RPC_URL"
 echo "Espresso URLs: $ESPRESSO_URL1, $ESPRESSO_URL2"
-echo "Attestation service url: $ESPRESSO_ATTESTATION_SERVICE_URL"
+echo "Attestation Service URL: $ESPRESSO_ATTESTATION_SERVICE_URL"
 echo "EigenDA Proxy URL: $EIGENDA_PROXY_URL"
 echo "Light Client Address: $ESPRESSO_LIGHT_CLIENT_ADDR"
-echo "Espresso Origin Height: $ESPRESSO_ORIGIN_HEIGHT_ESPRESSO"
-echo "L2 Origin Height: $ESPRESSO_ORIGIN_HEIGHT_L2"
-echo "Debug Mode: $ENCLAVE_DEBUG"
+echo "Data Availability Type: $DATA_AVAILABILITY_TYPE"
+echo "Compression Algo: $COMPRESSION_ALGO"
 echo "Max Channel Duration: $MAX_CHANNEL_DURATION"
 echo "Target Num Frames: $TARGET_NUM_FRAMES"
 echo "Max L1 Tx Size Bytes: $MAX_L1_TX_SIZE_BYTES"
-echo "AltDA Max Concurrent DA Requests: $ALTDA_MAX_CONCURRENT_DA_REQUESTS"
 echo "AltDA DA Service: $ALTDA_DA_SERVICE"
 echo "AltDA Verify On Read: $ALTDA_VERIFY_ON_READ"
+echo "AltDA Max Concurrent DA Requests: $ALTDA_MAX_CONCURRENT_DA_REQUESTS"
 echo "AltDA Put Timeout: $ALTDA_PUT_TIMEOUT"
 echo "AltDA Get Timeout: $ALTDA_GET_TIMEOUT"
-echo "Throttle Unsafe DA Bytes Lower Threshold: $THROTTLE_UNSAFE_DA_BYTES_LOWER_THRESHOLD"
-echo "Poll Interval: $POLL_INTERVAL"
-echo "Num Confirmations: $NUM_CONFIRMATIONS"
-echo "Resubmission Timeout: $RESUBMISSION_TIMEOUT"
-echo "RPC Enable Admin: $RPC_ENABLE_ADMIN"
-echo "Espresso Poll Interval: $ESPRESSO_POLL_INTERVAL"
-echo "Compression Algo: $COMPRESSION_ALGO"
 echo "Sub Safety Margin: $SUB_SAFETY_MARGIN"
 echo "TxMgr Min Tip Cap: $TXMGR_MIN_TIP_CAP"
 echo "Max Pending Tx: $MAX_PENDING_TX"
+echo "RPC Enable Admin: $RPC_ENABLE_ADMIN"
+echo "Extra Args: $EXTRA_ARGS"
+echo "Debug Mode: $ENCLAVE_DEBUG"
 echo "====================================="
 
 # Send batcher args as a NUL-separated stream.
@@ -110,39 +87,46 @@ echo "====================================="
 send_batcher_args() {
     # TODO: add "--committed-params-json=${COMMITTED_PARAMS_JSON}" once
     # op-batcher registers that flag upstream (optimism-espresso-integration).
+
+    # Required endpoints and secrets
     printf '%s\0' \
         "--l1-eth-rpc=$L1_RPC_URL" \
         "--l2-eth-rpc=$L2_RPC_URL" \
         "--rollup-rpc=$ROLLUP_RPC_URL" \
+        "--private-key=$OP_BATCHER_PRIVATE_KEY" \
         "--espresso.enabled=true" \
         "--espresso.urls=$ESPRESSO_URL1" \
         "--espresso.urls=$ESPRESSO_URL2" \
         "--espresso.espresso-attestation-service=$ESPRESSO_ATTESTATION_SERVICE_URL" \
-        "--espresso.origin-height-espresso=$ESPRESSO_ORIGIN_HEIGHT_ESPRESSO" \
-        "--espresso.origin-height-l2=$ESPRESSO_ORIGIN_HEIGHT_L2" \
-        "--espresso.poll-interval=$ESPRESSO_POLL_INTERVAL" \
-        "--private-key=$OP_BATCHER_PRIVATE_KEY" \
-        "--poll-interval=$POLL_INTERVAL" \
-        "--num-confirmations=$NUM_CONFIRMATIONS" \
-        "--resubmission-timeout=$RESUBMISSION_TIMEOUT" \
-        "--rpc.enable-admin=$RPC_ENABLE_ADMIN" \
-        "--throttle.unsafe-da-bytes-lower-threshold=$THROTTLE_UNSAFE_DA_BYTES_LOWER_THRESHOLD" \
+        "--altda.enabled=true" \
+        "--altda.da-server=$EIGENDA_PROXY_URL"
+
+    # Committed params — enforced against enclave hash once wired up
+    printf '%s\0' \
+        "--espresso.light-client-addr=$ESPRESSO_LIGHT_CLIENT_ADDR" \
+        "--data-availability-type=$DATA_AVAILABILITY_TYPE" \
+        "--compression-algo=$COMPRESSION_ALGO" \
         "--max-channel-duration=$MAX_CHANNEL_DURATION" \
         "--target-num-frames=$TARGET_NUM_FRAMES" \
         "--max-l1-tx-size-bytes=$MAX_L1_TX_SIZE_BYTES" \
-        "--espresso.light-client-addr=$ESPRESSO_LIGHT_CLIENT_ADDR" \
-        "--altda.enabled=true" \
-        "--altda.da-server=$EIGENDA_PROXY_URL" \
         "--altda.da-service=$ALTDA_DA_SERVICE" \
         "--altda.verify-on-read=$ALTDA_VERIFY_ON_READ" \
         "--altda.max-concurrent-da-requests=$ALTDA_MAX_CONCURRENT_DA_REQUESTS" \
         "--altda.put-timeout=$ALTDA_PUT_TIMEOUT" \
         "--altda.get-timeout=$ALTDA_GET_TIMEOUT" \
-        "--data-availability-type=$DATA_AVAILABILITY_TYPE" \
-        "--compression-algo=$COMPRESSION_ALGO" \
         "--sub-safety-margin=$SUB_SAFETY_MARGIN" \
         "--txmgr.min-tip-cap=$TXMGR_MIN_TIP_CAP" \
-        "--max-pending-tx=$MAX_PENDING_TX"
+        "--max-pending-tx=$MAX_PENDING_TX" \
+        "--rpc.enable-admin=$RPC_ENABLE_ADMIN"
+
+    # Extra args — runtime tuning, new flags, anything not committed
+    # Pass as space-separated flags, e.g. "--poll-interval=1s --num-confirmations=8"
+    if [ -n "$EXTRA_ARGS" ]; then
+        for arg in $EXTRA_ARGS; do
+            printf '%s\0' "$arg"
+        done
+    fi
+
     if [ "$ENCLAVE_DEBUG" = "true" ]; then
         printf '%s\0' "--log.level=debug"
         echo "Debug logging enabled" >&2
