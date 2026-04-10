@@ -122,9 +122,11 @@ send_batcher_args() {
     # Extra args — runtime tuning, new flags, anything not committed
     # Pass as space-separated flags, e.g. "--poll-interval=1s --num-confirmations=8"
     if [ -n "$EXTRA_ARGS" ]; then
+        set -f
         for arg in $EXTRA_ARGS; do
             printf '%s\0' "$arg"
         done
+        set +f
     fi
 
     if [ "$ENCLAVE_DEBUG" = "true" ]; then
