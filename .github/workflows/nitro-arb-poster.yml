@@ -123,7 +123,7 @@ jobs:
             CONFIG_HASH=${{ env.CONFIG_HASH }}
             AWS_REGION=${{ github.event.inputs.aws_region }}
             AWS_SECRET_ID=${{ github.event.inputs.aws_secret_id }}
-            ENFORCE_CONFIG=${{ github.event.inputs.enforce_config || 'true' }}
+            ENFORCE_CONFIG=${{ env.ENFORCE_CONFIG }}
           push: false
           tags: nitro-image:latest
           load: true
