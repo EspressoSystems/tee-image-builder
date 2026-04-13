@@ -46,6 +46,10 @@ on:
         type: string
         description: 'AWS Secrets Manager secret ARN'
         required: true
+      enforce_config:
+        type: boolean
+        description: 'Enforce config hash check inside the enclave. Disable only for debugging — produces a distinct PCR0.'
+        default: true
 
 env:
   REGISTRY: ghcr.io
@@ -75,8 +79,12 @@ jobs:
           CONFIG_PATH="chain-configs/nitro/${{ env.CHAIN }}.json"
           echo "CONFIG_PATH=${CONFIG_PATH}" >> $GITHUB_ENV
 
+          ENFORCE_CONFIG="${{ github.event.inputs.enforce_config || 'true' }}"
+          echo "ENFORCE_CONFIG=${ENFORCE_CONFIG}" >> $GITHUB_ENV
+
           echo "Using nitro image: ${NITRO_IMAGE_PATH}"
           echo "Using config: ${CONFIG_PATH}"
+          echo "Enforce config: ${ENFORCE_CONFIG}"
 
       - name: Compute config hash
         run: |
@@ -115,6 +123,7 @@ jobs:
             CONFIG_HASH=${{ env.CONFIG_HASH }}
             AWS_REGION=${{ github.event.inputs.aws_region }}
             AWS_SECRET_ID=${{ github.event.inputs.aws_secret_id }}
+            ENFORCE_CONFIG=${{ env.ENFORCE_CONFIG }}
           push: false
           tags: nitro-image:latest
           load: true
@@ -250,6 +259,7 @@ jobs:
             echo 'LABEL enclave.chain="${{ env.CHAIN }}"'
             echo 'LABEL enclave.nitro-image="${{ env.NITRO_IMAGE_PATH }}"'
             echo 'LABEL enclave.config-hash="${{ env.CONFIG_HASH }}"'
+            echo 'LABEL enclave.enforce-config="${{ env.ENFORCE_CONFIG }}"'
             echo "LABEL enclave.config-url=\"${CONFIG_URL}\""
             echo "LABEL enclave.release-url=\"${RELEASE_URL}\""
             echo 'LABEL org.opencontainers.image.source="${{ github.server_url }}/${{ github.repository }}"'
