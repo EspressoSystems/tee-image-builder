@@ -29,7 +29,7 @@
       "max-delay": "1h0m0s",
       "max-size": 90000,
       "parent-chain-wallet": {
-        "private-key": "PLACE_HOLDER"
+        "private-key": "PLACEHOLDER"
       },
       "post-4844-blobs": false,
       "wait-for-max-delay": true
@@ -43,11 +43,11 @@
       "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/1",
       "rest-aggregator": {
         "enable": true,
-        "urls": "PLACE_HOLDER"
+        "urls": "PLACEHOLDER"
       },
       "rpc-aggregator": {
         "assumed-honest": 1,
-        "backends": "PLACE_HOLDER",
+        "backends": "PLACEHOLDER",
         "enable": true
       },
       "sequencer-inbox-address": "0xC4090C4F0b25Dd7eb2868Fdbd5F1fd822903d391"
