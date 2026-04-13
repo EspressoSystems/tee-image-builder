@@ -103,14 +103,16 @@ CONFIG_SHA=$(jq -cS 'del(
 }
 
 echo "Comparing config sha"
-if [ "$CONFIG_SHA" != "$EXPECTED_CONFIG_SHA256" ]; then
+if [[ "${ENFORCE_CONFIG}" == "false" ]]; then
+    echo "WARNING: Config hash enforcement disabled — skipping check (Expected: $EXPECTED_CONFIG_SHA256, Actual: $CONFIG_SHA)"
+elif [ "$CONFIG_SHA" != "$EXPECTED_CONFIG_SHA256" ]; then
     echo "ERROR: Config sha256 mismatch"
     echo "Expected: $EXPECTED_CONFIG_SHA256"
     echo "Actual:   $CONFIG_SHA"
     exit 1
+else
+    echo "Config sha256 verified"
 fi
-
-echo "Config sha256 verified"
 
 if [[ "$DA_ENABLED" == "true" ]]; then
   echo "Injecting data-availability aggregators from aws secrets into config"

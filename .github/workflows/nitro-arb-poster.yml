@@ -46,6 +46,10 @@ on:
         type: string
         description: 'AWS Secrets Manager secret ARN'
         required: true
+      enforce_config:
+        type: boolean
+        description: 'Enforce config hash check inside the enclave. Disable only for debugging — produces a distinct PCR0.'
+        default: true
 
 env:
   REGISTRY: ghcr.io
@@ -115,6 +119,7 @@ jobs:
             CONFIG_HASH=${{ env.CONFIG_HASH }}
             AWS_REGION=${{ github.event.inputs.aws_region }}
             AWS_SECRET_ID=${{ github.event.inputs.aws_secret_id }}
+            ENFORCE_CONFIG=${{ github.event.inputs.enforce_config || 'true' }}
           push: false
           tags: nitro-image:latest
           load: true
