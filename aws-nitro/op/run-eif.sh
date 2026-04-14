@@ -36,7 +36,6 @@ echo "Committed params loaded from ${COMMITTED_PARAMS_FILE}"
 
 # Committed params — validated against enclave hash once enforcement is wired up
 : ${ESPRESSO_LIGHT_CLIENT_ADDR:?Error: ESPRESSO_LIGHT_CLIENT_ADDR is required}
-: ${DATA_AVAILABILITY_TYPE:?Error: DATA_AVAILABILITY_TYPE is required}
 : ${COMPRESSION_ALGO:?Error: COMPRESSION_ALGO is required}
 : ${MAX_CHANNEL_DURATION:?Error: MAX_CHANNEL_DURATION is required}
 : ${TARGET_NUM_FRAMES:?Error: TARGET_NUM_FRAMES is required}
@@ -62,7 +61,6 @@ echo "Espresso URLs: $ESPRESSO_URL1, $ESPRESSO_URL2"
 echo "Attestation Service URL: $ESPRESSO_ATTESTATION_SERVICE_URL"
 echo "EigenDA Proxy URL: $EIGENDA_PROXY_URL"
 echo "Light Client Address: $ESPRESSO_LIGHT_CLIENT_ADDR"
-echo "Data Availability Type: $DATA_AVAILABILITY_TYPE"
 echo "Compression Algo: $COMPRESSION_ALGO"
 echo "Max Channel Duration: $MAX_CHANNEL_DURATION"
 echo "Target Num Frames: $TARGET_NUM_FRAMES"
@@ -104,7 +102,6 @@ send_batcher_args() {
     # Committed params — enforced against enclave hash once wired up
     printf '%s\0' \
         "--espresso.light-client-addr=$ESPRESSO_LIGHT_CLIENT_ADDR" \
-        "--data-availability-type=$DATA_AVAILABILITY_TYPE" \
         "--compression-algo=$COMPRESSION_ALGO" \
         "--max-channel-duration=$MAX_CHANNEL_DURATION" \
         "--target-num-frames=$TARGET_NUM_FRAMES" \
