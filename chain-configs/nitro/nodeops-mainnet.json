@@ -1,0 +1,121 @@
+{
+    "chain": {
+        "info-json": "[{\"chain-id\":46290,\"parent-chain-id\":42161,\"chain-name\":\"nodeops-orchestrator-network-2nhx\",\"chain-config\":{\"chainId\":46290,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":true,\"InitialArbOSVersion\":32,\"Celestia\":false,\"EigenDA\":false,\"InitialChainOwner\":\"0x677c5352e71361adff78210314c62664937ddb32\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0x05236916aFDBb3f5d8609c0D8B997D223D1aaa65\",\"inbox\":\"0x3864c4b5738F32D87C8688a79cBB25135851B0cB\",\"sequencer-inbox\":\"0x41DFcCc4528eE0b1bEe04078917D554FeE71a568\",\"rollup\":\"0x11670125a21b1cB1fD941F78E787657dE1e54A30\",\"validator-utils\":\"0x777e92d35E7830011cF0C6Fa129cEa292B974696\",\"validator-wallet-creator\":\"0x395a56158C45CFeE2D879aD80E4B8950a350769A\",\"deployed-at\":359047436}}]",
+        "name": "nodeops-orchestrator-network-2nhx"
+    },
+    "execution": {
+        "caching": {
+            "archive": true
+        },
+        "forwarding-target": "null",
+        "sequencer": {
+            "enable": false,
+            "max-block-speed": "250ms",
+            "max-tx-data-size": 75000
+        }
+    },
+    "http": {
+        "addr": "0.0.0.0",
+        "api": [
+            "eth",
+            "net",
+            "web3",
+            "arb",
+            "debug",
+            "txpool"
+        ],
+        "corsdomain": "*",
+        "port": 8545,
+        "vhosts": "*"
+    },
+    "node": {
+        "batch-poster": {
+            "enable": true,
+            "l1-block-bound": "finalized",
+            "max-delay": "1h0m0s",
+            "max-empty-batch-delay": "15h0m0s",
+            "max-size": 80000,
+            "parent-chain-wallet": {
+                "private-key": "PLACEHOLDER"
+            },
+            "poll-interval": "60s",
+            "wait-for-max-delay": true
+        },
+        "dangerous": {
+            "no-sequencer-coordinator": false
+        },
+        "data-availability": {
+            "enable": true,
+            "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/42161",
+            "rest-aggregator": {
+                "enable": true,
+                "urls": "https://nodeops-orchestrator-network.calderachain.xyz/rest-aggregator"
+            },
+            "rpc-aggregator": {
+                "assumed-honest": 1,
+                "backends": "PLACEHOLDER",
+                "enable": true
+            },
+            "sequencer-inbox-address": "0x41DFcCc4528eE0b1bEe04078917D554FeE71a568"
+        },
+        "delayed-sequencer": {
+            "enable": false
+        },
+        "espresso": {
+            "batch-poster": {
+                "attestation-service-url": "http://arb-verifier.mainnets.espresso.private:8080",
+                "hotshot-first-posting-block": 448357601,
+                "hotshot-url": "https://cache.main.net.espresso.network/",
+                "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
+                "resubmit-espresso-tx-deadline": "2m",
+                "tee-type": "NITRO",
+                "txns-monitoring-interval": "1s",
+                "txns-resubmission-interval": "10s"
+            },
+            "streamer": {
+                "address-monitor-start-l1": 448357601,
+                "address-monitor-step": 10000,
+                "hotshot-block": 12429799,
+                "txns-polling-interval": "125ms"
+            }
+        },
+        "feed": {
+            "input": {
+                "url": [
+                    "wss://nodeops-orchestrator-network.calderachain.xyz/feed"
+                ]
+            },
+            "output": {
+                "enable": true,
+                "port": 9642
+            }
+        },
+        "seq-coordinator": {
+            "enable": false
+        },
+        "sequencer": false,
+        "staker": {
+            "enable": false
+        }
+    },
+    "parent-chain": {
+        "connection": {
+            "url": "http://erpc.mainnets.espresso.private:4000/main/evm/42161"
+        }
+    },
+    "persistent": {
+        "chain": "local"
+    },
+    "ws": {
+        "addr": "0.0.0.0",
+        "api": [
+            "eth",
+            "net",
+            "web3",
+            "arb",
+            "debug",
+            "txpool"
+        ],
+        "port": 8546
+    }
+}
