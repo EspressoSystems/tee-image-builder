@@ -1,5 +1,7 @@
 #!/bin/bash
-# Pre-commit hook to prevent committing private keys and sensitive URLs
+# Pre-commit hook:
+#   1. Auto-format staged JSON files (4-space indent)
+#   2. Check for private keys and sensitive URLs
 
 staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep "\.json$" || true)
 
@@ -9,9 +11,17 @@ fi
 
 for file in $staged_files; do
     if [ -f "$file" ]; then
-        if ! git show ":$file" | python3 .githooks/check_config.py; then
+        if python3 scripts/format_config.py "$file"; then
+            git add "$file"
+        fi
+
+        if ! git show ":$file" | python3 scripts/check_config.py; then
             echo "   File: $file"
             echo ""
+            exit 1
+        fi
+
+        if ! python3 scripts/validate_config.py "$file"; then
             exit 1
         fi
     fi
