@@ -14,7 +14,7 @@ committed:   # Baked as ENV into EIF at build time — changing these changes PC
   SUB_SAFETY_MARGIN: "6"
   TXMGR_MIN_TIP_CAP: "0.02"
   MAX_PENDING_TX: "32"
-  THROTTLE_THRESHOLD: "0"
+  THROTTLE_UNSAFE_DA_BYTES_LOWER_THRESHOLD: "0"
   RPC_ENABLE_ADMIN: "true"
 
 runtime:     # Passed at deploy time; defaults shown

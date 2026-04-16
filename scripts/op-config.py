@@ -59,9 +59,7 @@ def mode_committed_json(cfg, committed):
 def mode_labels(cfg, committed):
     for k, v in committed.items():
         print(f'LABEL config.committed.{k}="{v}"')
-        print(f'LABEL config.committed.{k}="{v.replace('"', '\"')}"')
         print(f'LABEL config.runtime.{k}="{v}"')
-        print(f'LABEL config.runtime.{k}="{v.replace('"', '\"')}"')
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
