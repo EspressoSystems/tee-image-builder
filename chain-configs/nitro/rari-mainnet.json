@@ -1,0 +1,125 @@
+{
+    "chain": {
+        "info-json": "[{\"chain-id\":1380012617,\"parent-chain-id\":42161,\"chain-name\":\"rari\",\"chain-config\":{\"chainId\":1380012617,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":true,\"InitialArbOSVersion\":10,\"InitialChainOwner\":\"0xba739a061291e9aec6422bdad3e9d48d4f7aa552\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0x255f80Ef2F09FCE0944faBb292b8510F01316Cf0\",\"inbox\":\"0x37e60F80d921dc5E7f501a7130F31f6548dBa564\",\"sequencer-inbox\":\"0xA436f1867adD490BF1530c636f2FB090758bB6B3\",\"rollup\":\"0x2e988Ea0873C9d712628F0bf38DAFdE754927C89\",\"validator-utils\":\"0x9e83136d4B3AD04C766591EA51712F9aEa3194C0\",\"validator-wallet-creator\":\"0x0cB25fa1Bb1b12Ef908c09FD2d3C34f16F455DB3\",\"deployed-at\":172197973}}]",
+        "name": "rari"
+    },
+    "parent-chain": {
+        "connection": {
+            "url": "http://erpc-0.azure.espresso.private:4000/main/evm/42161"
+        }
+    },
+    "http": {
+        "addr": "0.0.0.0",
+        "port": 8545,
+        "vhosts": "*",
+        "corsdomain": "*",
+        "api": [
+            "eth",
+            "net",
+            "web3",
+            "arb",
+            "debug",
+            "txpool"
+        ]
+    },
+    "ws": {
+        "addr": "0.0.0.0",
+        "port": 8546,
+        "api": [
+            "eth",
+            "net",
+            "web3",
+            "arb",
+            "debug",
+            "txpool"
+        ]
+    },
+    "node": {
+        "feed": {
+            "input": {
+                "url": [
+                    "wss://rari.calderachain.xyz/feed"
+                ]
+            },
+            "output": {
+                "enable": false,
+                "port": 9642
+            }
+        },
+        "sequencer": "false",
+        "delayed-sequencer": {
+            "enable": false
+        },
+        "batch-poster": {
+            "max-size": 90000,
+            "enable": true,
+            "l1-block-bound": "finalized",
+            "parent-chain-wallet": {
+                "private-key": "PLACEHOLDER"
+            },
+            "hotshot-urls": [
+                "https://query.main.net.espresso.network/",
+                "https://query.main.net.espresso.network/"
+            ],
+            "light-client-address": "0x47495bb99cccbb1bda9f15b32b69093137f886db",
+            "wait-for-max-delay": true,
+            "max-delay": "50m",
+            "resubmit-espresso-tx-deadline": "2m",
+            "espresso-txns-polling-interval": "300ms"
+        },
+        "transaction-streamer": {
+            "user-data-attestation-file": "/dev/attestation/user_report_data",
+            "quote-file": "/dev/attestation/quote"
+        },
+        "staker": {
+            "enable": false,
+            "strategy": "MakeNodes",
+            "parent-chain-wallet": {
+                "private-key": "PLACEHOLDER"
+            }
+        },
+        "data-availability": {
+            "enable": true,
+            "sequencer-inbox-address": "0xA436f1867adD490BF1530c636f2FB090758bB6B3",
+            "parent-chain-node-url": "http://erpc-0.azure.espresso.private:4000/main/evm/42161",
+            "rest-aggregator": {
+                "enable": true,
+                "urls": "https://rari.calderachain.xyz/rest-aggregator"
+            },
+            "rpc-aggregator": {
+                "enable": true,
+                "assumed-honest": 1,
+                "backends": "PLACEHOLDER"
+            }
+        },
+        "dangerous": {
+            "no-sequencer-coordinator": true
+        },
+        "celestia-cfg": {
+            "enable": true,
+            "url": "PLACEHOLDER"
+        },
+        "parent-chain-reader": {
+            "poll-only": true,
+            "poll-interval": "60s"
+        },
+        "da-preference": [
+            "celestia",
+            "anytrust"
+        ]
+    },
+    "execution": {
+        "caching": {
+            "archive": false
+        },
+        "sequencer": {
+            "max-tx-data-size": 85000,
+            "enable": false,
+            "max-block-speed": "250ms"
+        },
+        "forwarding-target": "null"
+    },
+    "persistent": {
+        "chain": "local"
+    }
+}
