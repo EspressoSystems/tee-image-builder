@@ -96,6 +96,7 @@
     "espresso": {
       "batch-poster": {
         "hotshot-url": "https://query.decaf.testnet.espresso.network/",
+        "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
         "attestation-service-url": "http://arb-verifier.testnets.espresso.private:8080/",
         "tee-type": "NITRO",
         "txns-resubmission-interval": "10s",
