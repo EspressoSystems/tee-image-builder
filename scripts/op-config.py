@@ -2,7 +2,7 @@
 """
 OP batcher config helper for the EIF build workflow.
 
-Reads chains/op/<chain>.yaml and outputs one of three artifacts:
+Reads chain-configs/op/<chain>.yaml and outputs one of three artifacts:
 
   dockerfile-params  — Dockerfile that bakes EXPECTED_COMMITTED_PARAMS_SHA256
                        into the intermediate app image (affects PCR0).
