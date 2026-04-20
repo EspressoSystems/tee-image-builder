@@ -1,144 +1,141 @@
 {
-    "chain": {
-        "info-json": "[{\"chain-id\":4661,\"parent-chain-id\":11155111,\"chain-name\":\"appchaintestnet-o56bk\",\"chain-config\":{\"chainId\":4661,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":true,\"InitialArbOSVersion\":32,\"EigenDA\":false,\"Celestia\":false,\"InitialChainOwner\":\"0xf29a2d4b4561126bd6f2b492d0332386dabb54ab\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0x3459B1c473Df19dAC7499F48800A8bE281Fc424E\",\"inbox\":\"0x6251E95a15106aFF4f39f4530f713c5B28A0457B\",\"sequencer-inbox\":\"0xee9cFf7d4C022c6c33cf0C9ca46ad5634612E9E3\",\"rollup\":\"0x17f67e6Ae0f784C54ED9231c096aee524b41f34C\",\"validator-utils\":\"0x81d3Ceeb4C68F12e90e068b331D4e7C58a553E78\",\"validator-wallet-creator\":\"0x995652bEC1e1A416EbDAc49054FFF49616fFE51E\",\"deployed-at\":7208134}}]",
-        "name": "appchaintestnet-o56bk"
+  "chain": {
+    "info-json": "[{\"chain-id\":4661,\"parent-chain-id\":11155111,\"chain-name\":\"appchaintestnet-o56bk\",\"chain-config\":{\"chainId\":4661,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":true,\"InitialArbOSVersion\":32,\"EigenDA\":false,\"Celestia\":false,\"InitialChainOwner\":\"0xf29a2d4b4561126bd6f2b492d0332386dabb54ab\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0x3459B1c473Df19dAC7499F48800A8bE281Fc424E\",\"inbox\":\"0x6251E95a15106aFF4f39f4530f713c5B28A0457B\",\"sequencer-inbox\":\"0xee9cFf7d4C022c6c33cf0C9ca46ad5634612E9E3\",\"rollup\":\"0x17f67e6Ae0f784C54ED9231c096aee524b41f34C\",\"validator-utils\":\"0x81d3Ceeb4C68F12e90e068b331D4e7C58a553E78\",\"validator-wallet-creator\":\"0x995652bEC1e1A416EbDAc49054FFF49616fFE51E\",\"deployed-at\":7208134}}]",
+    "name": "appchaintestnet-o56bk"
+  },
+  "parent-chain": {
+    "connection": {
+      "url": "http://erpc.testnets.espresso.private:4000/main/evm/11155111"
     },
-    "parent-chain": {
-        "connection": {
-            "url": "http://proxyd:8545/"
-        },
-        "blob-client": {
-            "beacon-url": "https://ethereum-sepolia-beacon-api.publicnode.com"
-        }
-    },
-    "http": {
-        "addr": "0.0.0.0",
-        "port": 8545,
-        "vhosts": "*",
-        "corsdomain": "*",
-        "api": [
-            "eth",
-            "net",
-            "web3",
-            "arb",
-            "debug",
-            "txpool"
-        ]
-    },
-    "ws": {
-        "addr": "0.0.0.0",
-        "port": 8546,
-        "api": [
-            "eth",
-            "net",
-            "web3",
-            "arb",
-            "txpool"
-        ]
-    },
-    "node": {
-        "sequencer": false,
-        "delayed-sequencer": {
-            "enable": false
-        },
-        "seq-coordinator": {
-            "enable": false,
-            "redis-url": "",
-            "lockout-duration": "30s",
-            "lockout-spare": "1s",
-            "my-url": "",
-            "retry-interval": "0.5s",
-            "seq-num-duration": "24h0m0s",
-            "update-interval": "3s"
-        },
-        "batch-poster": {
-            "max-size": 650000,
-            "enable": true,
-            "poll-interval": "60s",
-            "parent-chain-wallet": {
-                "private-key": "PLACEHOLDER"
-            },
-            "data-poster": {
-                "max-base-fee": 20000000000
-            },
-            "espresso-register-signer-config": {
-                "max-base-fee": 6000000000,
-                "max-retries": 5
-            },
-            "hotshot-urls": [
-                "https://query.decaf.testnet.espresso.network/",
-                "https://query.decaf.testnet.espresso.network/"
-            ],
-            "espresso-tee-type": "SGX",
-            "espresso-txns-polling-interval": "3s",
-            "espresso-txns-resubmission-interval": "10s",
-            "espresso-txns-sending-interval": "3s",
-            "espresso-tx-size-limit": "800000",
-            "wait-for-max-delay": true,
-            "hotshot-block": 5510634,
-            "hotshot-first-posting-block": 9361986,
-            "address-monitor-start-l1": 9361986,
-            "light-client-address": "0x303872bb82a191771321d4828888920100d0b3e4",
-            "max-delay": "5h0m0s",
-            "max-empty-batch-delay": "10h0m0s",
-            "l1-block-bound": "ignore",
-            "resubmit-espresso-tx-deadline": "2m",
-            "post-4844-blobs": false,
-            "ignore-blob-price": true
-        },
-        "transaction-streamer": {
-            "user-data-attestation-file": "/dev/attestation/user_report_data",
-            "quote-file": "/dev/attestation/quote"
-        },
-        "staker": {
-            "enable": false,
-            "strategy": "MakeNodes"
-        },
-        "dangerous": {
-            "no-sequencer-coordinator": true,
-            "disable-blob-reader": false
-        },
-        "parent-chain-reader": {
-            "poll-only": true
-        },
-        "data-availability": {
-            "enable": true,
-            "sequencer-inbox-address": "0xee9cFf7d4C022c6c33cf0C9ca46ad5634612E9E3",
-            "parent-chain-node-url": "http://proxyd:8545/",
-            "rest-aggregator": {
-                "enable": true,
-                "urls": "https://appchaintestnet.rpc.caldera.xyz/rest-aggregator"
-            },
-            "rpc-aggregator": {
-                "enable": true,
-                "assumed-honest": 1,
-                "backends": "PLACEHOLDER"
-            }
-        },
-        "feed": {
-            "input": {
-                "url": [
-                    "wss://appchaintestnet.rpc.caldera.xyz/feed"
-                ]
-            },
-            "output": {
-                "enable": false,
-                "port": 9642
-            }
-        }
-    },
-    "execution": {
-        "caching": {
-            "archive": false
-        },
-        "sequencer": {
-            "max-tx-data-size": 85000,
-            "enable": false,
-            "max-block-speed": "250ms"
-        },
-        "forwarding-target": "null"
-    },
-    "persistent": {
-        "chain": "local"
+    "blob-client": {
+      "beacon-url": "https://ethereum-sepolia-beacon-api.publicnode.com"
     }
+  },
+  "http": {
+    "addr": "0.0.0.0",
+    "port": 8545,
+    "vhosts": "*",
+    "corsdomain": "*",
+    "api": [
+      "eth",
+      "net",
+      "web3",
+      "arb",
+      "debug",
+      "txpool"
+    ]
+  },
+  "ws": {
+    "addr": "0.0.0.0",
+    "port": 8546,
+    "api": [
+      "eth",
+      "net",
+      "web3",
+      "arb",
+      "txpool"
+    ]
+  },
+  "node": {
+    "sequencer": false,
+    "delayed-sequencer": {
+      "enable": false
+    },
+    "seq-coordinator": {
+      "enable": false,
+      "redis-url": "",
+      "lockout-duration": "30s",
+      "lockout-spare": "1s",
+      "my-url": "",
+      "retry-interval": "0.5s",
+      "seq-num-duration": "24h0m0s",
+      "update-interval": "3s"
+    },
+    "batch-poster": {
+      "max-size": 650000,
+      "enable": true,
+      "poll-interval": "60s",
+      "parent-chain-wallet": {
+        "private-key": "PLACEHOLDER"
+      },
+      "data-poster": {
+        "max-base-fee": 20000000000
+      },
+      "wait-for-max-delay": true,
+      "max-delay": "5h0m0s",
+      "max-empty-batch-delay": "10h0m0s",
+      "l1-block-bound": "ignore",
+      "post-4844-blobs": false,
+      "ignore-blob-price": true
+    },
+    "staker": {
+      "enable": false,
+      "strategy": "MakeNodes"
+    },
+    "dangerous": {
+      "no-sequencer-coordinator": true,
+      "disable-blob-reader": false
+    },
+    "parent-chain-reader": {
+      "poll-only": true
+    },
+    "data-availability": {
+      "enable": true,
+      "sequencer-inbox-address": "0xee9cFf7d4C022c6c33cf0C9ca46ad5634612E9E3",
+      "parent-chain-node-url": "http://erpc.testnets.espresso.private:4000/main/evm/11155111",
+      "rest-aggregator": {
+        "enable": true,
+        "urls": "PLACEHOLDER"
+      },
+      "rpc-aggregator": {
+        "enable": true,
+        "assumed-honest": 1,
+        "backends": "PLACEHOLDER"
+      }
+    },
+    "feed": {
+      "input": {
+        "url": [
+          "wss://appchaintestnet.rpc.caldera.xyz/feed"
+        ]
+      },
+      "output": {
+        "enable": false,
+        "port": 9642
+      }
+    },
+    "espresso": {
+      "batch-poster": {
+        "hotshot-url": "https://cache.decaf.testnet.espresso.network/",
+        "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
+        "attestation-service-url": "http://eth-verifier.testnets.espresso.private:8080/",
+        "tee-type": "NITRO",
+        "address-valid-ranges": [{"address": "0x18b7E484e66B4620f9B0F88B1C49841e347d3Fa0", "from": 1, "to": 9234811370}],
+        "txns-resubmission-interval": "10s",
+        "txns-monitoring-interval": "3s",
+        "hotshot-first-posting-block": 9361986,
+        "resubmit-espresso-tx-deadline": "2m"
+      },
+      "streamer": {
+        "txns-polling-interval": "3s",
+        "hotshot-block": 5510634,
+        "address-monitor-start-l1": 9361986,
+        "address-monitor-step": 10000
+      }
+    }
+  },
+  "execution": {
+    "caching": {
+      "archive": false
+    },
+    "sequencer": {
+      "max-tx-data-size": 85000,
+      "enable": false,
+      "max-block-speed": "250ms"
+    },
+    "forwarding-target": "null"
+  },
+  "persistent": {
+    "chain": "local"
+  }
 }
