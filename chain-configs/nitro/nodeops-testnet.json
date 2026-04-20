@@ -5,7 +5,7 @@
   },
   "parent-chain": {
     "connection": {
-      "url": "http://erpc.mainnets.espresso.private:4000/main/evm/421614"
+      "url": "http://erpc.testnets.espresso.private:4000/main/evm/421614"
     }
   },
   "http": {
@@ -71,7 +71,7 @@
     "data-availability": {
       "enable": true,
       "sequencer-inbox-address": "0x20eE0e3B332d267189D7E361991C7c2879562FA9",
-      "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/421614",
+      "parent-chain-node-url": "http://erpc.testnets.espresso.private:4000/main/evm/421614",
       "rest-aggregator": {
         "enable": true,
         "urls": "PLACEHOLDER"
