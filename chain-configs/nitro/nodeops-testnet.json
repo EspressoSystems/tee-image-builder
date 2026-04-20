@@ -5,7 +5,7 @@
   },
   "parent-chain": {
     "connection": {
-      "url": "http://arbitrum.testnets.espresso.private:8545"
+      "url": "http://erpc.mainnets.espresso.private:4000/main/evm/421614"
     }
   },
   "http": {
@@ -71,7 +71,7 @@
     "data-availability": {
       "enable": true,
       "sequencer-inbox-address": "0x20eE0e3B332d267189D7E361991C7c2879562FA9",
-      "parent-chain-node-url": "http://arbitrum.testnets.espresso.private:8545",
+      "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/421614",
       "rest-aggregator": {
         "enable": true,
         "urls": "PLACEHOLDER"
@@ -95,19 +95,20 @@
     },
     "espresso": {
       "batch-poster": {
-        "hotshot-url": "https://query.decaf.testnet.espresso.network/",
+        "hotshot-url": "https://cache.decaf.testnet.espresso.network/",
         "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
         "attestation-service-url": "http://arb-verifier.testnets.espresso.private:8080/",
         "tee-type": "NITRO",
+        "address-valid-ranges": [{"address": "0x81ce7327d269D4736Ae8871162fc8EbB42c95E45", "from": 1, "to": 9234811370}],
         "txns-resubmission-interval": "10s",
         "txns-monitoring-interval": "3s",
-        "hotshot-first-posting-block": 225869367,
+        "hotshot-first-posting-block": 260450086,
         "resubmit-espresso-tx-deadline": "2m"
       },
       "streamer": {
         "txns-polling-interval": "125ms",
-        "hotshot-block": 6396470,
-        "address-monitor-start-l1": 225869367,
+        "hotshot-block": 7682165,
+        "address-monitor-start-l1": 260450086,
         "address-monitor-step": 10000
       }
     }
