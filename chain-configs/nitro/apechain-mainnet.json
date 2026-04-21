@@ -1,0 +1,123 @@
+{
+    "chain": {
+        "info-json": "[{\"chain-id\":33139,\"parent-chain-id\":42161,\"chain-name\":\"apechain\",\"chain-config\":{\"chainId\":33139,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":false,\"InitialArbOSVersion\":31,\"EigenDA\":false,\"InitialChainOwner\":\"0x5737cdbb3a67001441c0da8b86e6b1826705601c\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0x6B71AFb4b7725227ab944c96FE018AB9dc0434b8\",\"inbox\":\"0x1B98e4ED82Ee1a91A65a38C690e2266364064D15\",\"sequencer-inbox\":\"0xE6a92Ae29E24C343eE66A2B3D3ECB783d65E4a3C\",\"rollup\":\"0x374de579AE15aD59eD0519aeAf1A23F348Df259c\",\"validator-utils\":\"0xaB36aec5517C346D21b9C19429BAA5aa87D17fCa\",\"validator-wallet-creator\":\"0x5a6C98F6A60BDC02cE4d8AD43b4Fc88Fe5b38856\",\"deployed-at\":247653199}}]",
+        "name": "apechain"
+    },
+    "parent-chain": {
+        "connection": {
+            "url": "http://erpc.mainnets.espresso.private:4000/main/evm/42161"
+        }
+    },
+    "http": {
+        "addr": "0.0.0.0",
+        "api": [
+            "eth",
+            "net",
+            "web3",
+            "arb",
+            "debug",
+            "txpool"
+        ],
+        "corsdomain": "*",
+        "port": 8545,
+        "vhosts": "*"
+    },
+    "ws": {
+        "addr": "0.0.0.0",
+        "api": [
+            "eth",
+            "net",
+            "web3",
+            "arb",
+            "debug",
+            "txpool"
+        ],
+        "port": 8546
+    },
+    "node": {
+        "sequencer": false,
+        "delayed-sequencer": {
+            "enable": false
+        },
+        "seq-coordinator": {
+            "enable": false
+        },
+        "batch-poster": {
+            "max-size": 500000,
+            "enable": true,
+            "poll-interval": "60s",
+            "parent-chain-wallet": {
+                "private-key": "PLACEHOLDER"
+            },
+            "data-poster": {
+                "max-mempool-transactions": 70
+            },
+            "espresso-register-signer-config": {
+                "max-base-fee": 8000000000
+            },
+            "hotshot-urls": [
+                "https://query-0.main.net.espresso.network/",
+                "https://query-1.main.net.espresso.network/",
+                "https://query-2.main.net.espresso.network/",
+                "https://query-3.main.net.espresso.network/"
+            ],
+            "espresso-tee-verifier-address": "0x4fd6D0995B3016726D5674992c1Ec1bDe0989cF5",
+            "espresso-tee-type": "NITRO",
+            "espresso-txns-polling-interval": "125ms",
+            "espresso-txns-resubmission-interval": "10s",
+            "espresso-txns-sending-interval": "125ms",
+            "espresso-tx-size-limit": "800000",
+            "light-client-address": "0x95ca91cea73239b15e5d2e5a74d02d6b5e0ae458",
+            "max-delay": "1h0m0s",
+            "max-empty-batch-delay": "15h0m0s",
+            "l1-block-bound": "ignore",
+            "resubmit-espresso-tx-deadline": "2m",
+            "post-4844-blobs": false,
+            "ignore-blob-price": true
+        },
+        "staker": {
+            "enable": false,
+            "strategy": "MakeNodes"
+        },
+        "dangerous": {
+            "no-sequencer-coordinator": false
+        },
+        "data-availability": {
+            "enable": true,
+            "sequencer-inbox-address": "0xE6a92Ae29E24C343eE66A2B3D3ECB783d65E4a3C",
+            "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/42161",
+            "rest-aggregator": {
+                "enable": true,
+                "urls": "https://apechain.calderachain.xyz/rest-aggregator"
+            },
+            "rpc-aggregator": {
+                "enable": true,
+                "assumed-honest": 3,
+                "backends": "PLACEHOLDER"
+            }
+        },
+        "feed": {
+            "input": {
+                "url": [
+                    "wss://apechain.calderachain.xyz/feed"
+                ]
+            },
+            "output": {
+                "enable": false,
+                "port": 9642
+            }
+        }
+    },
+    "execution": {
+        "caching": {
+            "archive": false
+        },
+        "sequencer": {
+            "enable": false
+        },
+        "forwarding-target": "null"
+    },
+    "persistent": {
+        "chain": "local"
+    }
+}

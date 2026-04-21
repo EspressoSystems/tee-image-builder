@@ -270,7 +270,9 @@ class ConfigValidator:
                     message="tee-type must be either 'NITRO' or 'SGX'"
                 ))
         else:
-            if not self.is_file_exception('espresso_tee_type'):
+            # rari mainnet not yet on a sequencer inbox version supporting multiple espresso-tee-types
+            rari_exception = str(self.config_path).endswith("chain-configs/nitro/rari-mainnet.json")
+            if not self.is_file_exception('espresso_tee_type') and not rari_exception:
                 self.errors.append(ValidationResult(
                     rule_name="espresso_tee_type",
                     passed=False,
