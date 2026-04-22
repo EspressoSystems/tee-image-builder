@@ -41,10 +41,10 @@
         },
         "data-availability": {
             "enable": true,
-            "parent-chain-node-url": "http://erpc-0.azure.espresso.private:4000/main/evm/11155111",
+            "parent-chain-node-url": "http://erpc.testnets.espresso.private:4000/main/evm/11155111",
             "rest-aggregator": {
                 "enable": true,
-                "urls": "https://rufus-sepolia-testnet.rpc.caldera.xyz/rest-aggregator"
+                "urls": "PLACEHOLDER"
             },
             "rpc-aggregator": {
                 "assumed-honest": 1,
@@ -87,8 +87,17 @@
         },
         "espresso": {
             "batch-poster": {
-                "hotshot-url": "https://query.decaf.testnet.espresso.network/",
-                "tee-type": "SGX",
+                "hotshot-url": "https://cache.decaf.testnet.espresso.network/",
+                "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
+                "attestation-service-url": "http://verifier.testnets.espresso.private:8080",
+                "tee-type": "NITRO",
+                "address-valid-ranges": [
+                    {
+                        "address": "0xcEe72029A805a53523bD435f63487d7DE38b224D",
+                        "from": 1,
+                        "to": 9234811370
+                    }
+                ],
                 "txns-resubmission-interval": "10s",
                 "txns-monitoring-interval": "1s",
                 "hotshot-first-posting-block": 10326969,
@@ -97,13 +106,14 @@
             "streamer": {
                 "address-monitor-start-l1": 10349463,
                 "txns-polling-interval": "3s",
-                "hotshot-block": 7070725
+                "hotshot-block": 7070725,
+                "address-monitor-step": 10000
             }
         }
     },
     "parent-chain": {
         "connection": {
-            "url": "http://erpc-0.azure.espresso.private:4000/main/evm/11155111"
+            "url": "http://erpc.testnets.espresso.private:4000/main/evm/11155111"
         }
     },
     "persistent": {
