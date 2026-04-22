@@ -91,13 +91,6 @@
                 "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
                 "attestation-service-url": "http://verifier.testnets.espresso.private:8080",
                 "tee-type": "NITRO",
-                "address-valid-ranges": [
-                    {
-                        "address": "0xcEe72029A805a53523bD435f63487d7DE38b224D",
-                        "from": 1,
-                        "to": 9234811370
-                    }
-                ],
                 "txns-resubmission-interval": "10s",
                 "txns-monitoring-interval": "1s",
                 "hotshot-first-posting-block": 10326969,
