@@ -9,7 +9,7 @@
 #                         enclaver (EIF + enclaver-run proxy), then layering
 #                         run-eif.sh on top as ENTRYPOINT.
 #
-# Config source of truth: chains/op/<chain>.yaml
+# Config source of truth: chain-configs/op/<chain>.yaml
 #   committed: section — baked as ENV into the EIF at build time (affects PCR0)
 #   runtime:   section — defaults documented here; passed at deploy time
 #
@@ -31,7 +31,7 @@ on:
       chain:
         description: >
           OP chain to build, e.g. celo-devnet.
-          Selects chains/op/<chain>.yaml for committed and runtime config.
+          Selects chain-configs/op/<chain>.yaml for committed and runtime config.
         required: false
         default: 'celo-devnet'
       tag:
@@ -140,7 +140,7 @@ jobs:
 
       - name: Build committed-params intermediate image
         run: |
-          CONFIG_PATH="chains/op/${{ env.CHAIN }}.yaml"
+          CONFIG_PATH="chain-configs/op/${{ env.CHAIN }}.yaml"
           echo "Reading committed params from ${CONFIG_PATH}"
 
           # Bakes only EXPECTED_COMMITTED_PARAMS_SHA256 into the EIF (not individual values).
@@ -199,7 +199,7 @@ jobs:
 
       - name: Layer run-eif.sh and add OCI labels
         run: |
-          CONFIG_PATH="chains/op/${{ env.CHAIN }}.yaml"
+          CONFIG_PATH="chain-configs/op/${{ env.CHAIN }}.yaml"
           BUILDCTX=$(mktemp -d)
           cp aws-nitro/op/run-eif.sh "$BUILDCTX/run-eif.sh"
           chmod +x "$BUILDCTX/run-eif.sh"
@@ -266,7 +266,7 @@ jobs:
           echo "| **PCR2** | \`${{ env.PCR2 }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Enclave hash (keccak)** | \`${{ env.ENCLAVE_HASH }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Config (from chains/op/${{ env.CHAIN }}.yaml)" >> $GITHUB_STEP_SUMMARY
+          echo "### Config (from chain-configs/op/${{ env.CHAIN }}.yaml)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Committed params (baked into EIF, affect PCR0) and runtime defaults are" >> $GITHUB_STEP_SUMMARY
           echo "embedded as OCI labels. Run \`docker inspect ${{ env.EIF_TAG }}\` to view." >> $GITHUB_STEP_SUMMARY

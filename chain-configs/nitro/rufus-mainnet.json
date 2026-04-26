@@ -1,0 +1,132 @@
+{
+    "chain": {
+        "info-json": "[{\"chain-id\":2420,\"parent-chain-id\":1,\"chain-name\":\"rufus\",\"chain-config\":{\"chainId\":2420,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":true,\"InitialArbOSVersion\":32,\"EigenDA\":false,\"Celestia\":false,\"InitialChainOwner\":\"0xd2da96601d0879b60b101eb9c85a5efcabdbeb94\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0x0E1a60c49b3aAABa3313918f63F6CC6c55746B17\",\"inbox\":\"0x106FC45Fb109ac468D5321AeF1bC50E92761E7fb\",\"sequencer-inbox\":\"0xC4090C4F0b25Dd7eb2868Fdbd5F1fd822903d391\",\"rollup\":\"0x7e1B3B292cf7245E9064B7D1D4A995419C23bf85\",\"validator-utils\":\"0xA79305c7D5Ad6F8AF0292c863957a2488F13f0d1\",\"validator-wallet-creator\":\"0x6FB4500c12E1303aD174085FDEce0a097f578ED7\",\"deployed-at\":21382731}}]",
+        "name": "rufus"
+    },
+    "execution": {
+        "caching": {
+            "archive": true
+        },
+        "forwarding-target": "null"
+    },
+    "http": {
+        "addr": "0.0.0.0",
+        "api": [
+            "eth",
+            "net",
+            "web3",
+            "arb",
+            "txpool"
+        ],
+        "corsdomain": "*",
+        "port": 8545,
+        "vhosts": "*"
+    },
+    "node": {
+        "batch-poster": {
+            "enable": true,
+            "ignore-blob-price": false,
+            "max-delay": "1h0m0s",
+            "max-size": 90000,
+            "parent-chain-wallet": {
+                "private-key": "PLACEHOLDER"
+            },
+            "post-4844-blobs": false,
+            "data-poster": {
+                "dangerous": {
+                    "clear-dbstorage": true
+                },
+                "legacy-storage-encoding": true
+            },
+            "wait-for-max-delay": true
+        },
+        "dangerous": {
+            "disable-blob-reader": true,
+            "no-sequencer-coordinator": true
+        },
+        "data-availability": {
+            "enable": true,
+            "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/1",
+            "rest-aggregator": {
+                "enable": true,
+                "urls": "https://rufus.calderachain.xyz/rest-aggregator"
+            },
+            "rpc-aggregator": {
+                "assumed-honest": 1,
+                "backends": "PLACEHOLDER",
+                "enable": true
+            },
+            "sequencer-inbox-address": "0xC4090C4F0b25Dd7eb2868Fdbd5F1fd822903d391"
+        },
+        "delayed-sequencer": {
+            "enable": false
+        },
+        "espresso": {
+            "batch-poster": {
+                "attestation-service-url": "http://verifier.mainnets.espresso.private:8080",
+                "hotshot-first-posting-block": 24872243,
+                "hotshot-url": "https://cache.main.net.espresso.network/",
+                "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
+                "resubmit-espresso-tx-deadline": "2m",
+                "tee-type": "NITRO",
+                "txns-monitoring-interval": "1s",
+                "txns-resubmission-interval": "10s"
+            },
+            "streamer": {
+                "address-monitor-start-l1": 24872243,
+                "address-monitor-step": 10000,
+                "hotshot-block": 13173265,
+                "txns-polling-interval": "1s"
+            }
+        },
+        "feed": {
+            "input": {
+                "url": [
+                    "wss://rufus.calderachain.xyz/feed"
+                ]
+            },
+            "output": {
+                "enable": false,
+                "port": 9642
+            }
+        },
+        "parent-chain-reader": {
+            "poll-interval": "60s",
+            "poll-only": true
+        },
+        "seq-coordinator": {
+            "enable": false,
+            "lockout-duration": "30s",
+            "lockout-spare": "1s",
+            "my-url": "",
+            "redis-url": "",
+            "retry-interval": "0.5s",
+            "seq-num-duration": "24h0m0s",
+            "update-interval": "3s"
+        },
+        "sequencer": false,
+        "staker": {
+            "enable": false,
+            "strategy": "MakeNodes"
+        }
+    },
+    "parent-chain": {
+        "connection": {
+            "url": "http://erpc.mainnets.espresso.private:4000/main/evm/1"
+        }
+    },
+    "persistent": {
+        "chain": "local"
+    },
+    "ws": {
+        "addr": "0.0.0.0",
+        "api": [
+            "eth",
+            "net",
+            "web3",
+            "arb",
+            "txpool"
+        ],
+        "port": 8546
+    }
+}
