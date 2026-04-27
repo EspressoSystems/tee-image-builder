@@ -5,7 +5,7 @@
     },
     "parent-chain": {
         "connection": {
-            "url": "http://proxyd:8545/"
+            "url": "http://erpc.testnets.espresso.private:4000/main/evm/11155111"
         },
         "blob-client": {
             "beacon-url": "https://ethereum-sepolia-beacon-api.publicnode.com"
@@ -61,34 +61,12 @@
             "data-poster": {
                 "max-base-fee": 20000000000
             },
-            "espresso-register-signer-config": {
-                "max-base-fee": 6000000000,
-                "max-retries": 5
-            },
-            "hotshot-urls": [
-                "https://query.decaf.testnet.espresso.network/",
-                "https://query.decaf.testnet.espresso.network/"
-            ],
-            "espresso-tee-type": "SGX",
-            "espresso-txns-polling-interval": "3s",
-            "espresso-txns-resubmission-interval": "10s",
-            "espresso-txns-sending-interval": "3s",
-            "espresso-tx-size-limit": "800000",
             "wait-for-max-delay": true,
-            "hotshot-block": 5510634,
-            "hotshot-first-posting-block": 9361986,
-            "address-monitor-start-l1": 9361986,
-            "light-client-address": "0x303872bb82a191771321d4828888920100d0b3e4",
             "max-delay": "5h0m0s",
             "max-empty-batch-delay": "10h0m0s",
             "l1-block-bound": "ignore",
-            "resubmit-espresso-tx-deadline": "2m",
             "post-4844-blobs": false,
             "ignore-blob-price": true
-        },
-        "transaction-streamer": {
-            "user-data-attestation-file": "/dev/attestation/user_report_data",
-            "quote-file": "/dev/attestation/quote"
         },
         "staker": {
             "enable": false,
@@ -104,10 +82,10 @@
         "data-availability": {
             "enable": true,
             "sequencer-inbox-address": "0xee9cFf7d4C022c6c33cf0C9ca46ad5634612E9E3",
-            "parent-chain-node-url": "http://proxyd:8545/",
+            "parent-chain-node-url": "http://erpc.testnets.espresso.private:4000/main/evm/11155111",
             "rest-aggregator": {
                 "enable": true,
-                "urls": "https://appchaintestnet.rpc.caldera.xyz/rest-aggregator"
+                "urls": "PLACEHOLDER"
             },
             "rpc-aggregator": {
                 "enable": true,
@@ -124,6 +102,31 @@
             "output": {
                 "enable": false,
                 "port": 9642
+            }
+        },
+        "espresso": {
+            "batch-poster": {
+                "hotshot-url": "https://cache.decaf.testnet.espresso.network/",
+                "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
+                "attestation-service-url": "http://verifier.testnets.espresso.private:8080",
+                "tee-type": "NITRO",
+                "address-valid-ranges": [
+                    {
+                        "address": "0x8CF3eBbA8c916496FB9B70Ba0d7DB06733A85D97",
+                        "from": 1,
+                        "to": 9234811370
+                    }
+                ],
+                "txns-resubmission-interval": "10s",
+                "txns-monitoring-interval": "3s",
+                "hotshot-first-posting-block": 9361986,
+                "resubmit-espresso-tx-deadline": "2m"
+            },
+            "streamer": {
+                "txns-polling-interval": "1s",
+                "hotshot-block": 5510634,
+                "address-monitor-start-l1": 9361986,
+                "address-monitor-step": 10000
             }
         }
     },
