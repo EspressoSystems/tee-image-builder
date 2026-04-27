@@ -108,7 +108,7 @@
             "batch-poster": {
                 "hotshot-url": "https://cache.decaf.testnet.espresso.network/",
                 "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
-                "attestation-service-url": "http://eth-verifier.testnets.espresso.private:8080/",
+                "attestation-service-url": "http://verifier.testnets.espresso.private:8080",
                 "tee-type": "NITRO",
                 "address-valid-ranges": [
                     {
