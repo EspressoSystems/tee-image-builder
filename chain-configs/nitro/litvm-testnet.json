@@ -33,8 +33,21 @@
   },
   "node": {
     "batch-poster": {
-      "enable": false,
-      "max-size": 80000
+      "enable": true,
+      "max-size": 80000,
+      "poll-interval": "60s",
+      "parent-chain-wallet": {
+         "private-key": "PLACEHOLDER"
+      },
+      "data-poster": {
+          "max-base-fee": 20000000000
+      },
+      "wait-for-max-delay": true,
+      "max-delay": "5h0m0s",
+      "max-empty-batch-delay": "10h0m0s",
+      "l1-block-bound": "ignore",
+      "post-4844-blobs": false,
+      "ignore-blob-price": true
     },
     "dangerous": {
       "no-sequencer-coordinator": false
@@ -44,11 +57,11 @@
       "parent-chain-node-url": "http://erpc.testnets.espresso.private:4000/main/evm/11155111",
       "rest-aggregator": {
         "enable": true,
-        "urls": "PLACE_HOLDER"
+        "urls": "PLACEHOLDER"
       },
       "rpc-aggregator": {
         "assumed-honest": 1,
-        "backends": "PLACE_HOLDER",
+        "backends": "PLACEHOLDER",
         "enable": false
       },
       "sequencer-inbox-address": "0x7e8B0DD71be6C1216fd7334E7e5EAE8aa2e7276B"
@@ -85,7 +98,7 @@
         "url": [
             "wss://liteforge.rpc.caldera.xyz/feed"
         ]
-      }
+      },
       "output": {
         "enable": false,
         "port": 9642
@@ -111,6 +124,9 @@
     "connection": {
       "url": "http://erpc.testnets.espresso.private:4000/main/evm/11155111"
     }
+  },
+  "persistent": {
+      "chain": "local"
   },
   "ws": {
     "addr": "0.0.0.0",
