@@ -1,0 +1,121 @@
+{
+  "chain": {
+    "info-json": "[{\"chain-id\":4441,\"parent-chain-id\":11155111,\"chain-name\":\"liteforge\",\"chain-config\":{\"chainId\":4441,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":true,\"InitialArbOSVersion\":40,\"Celestia\":false,\"EigenDA\":false,\"InitialChainOwner\":\"0x8f0ad0fbc9e7e892fc951dfca366c588eebff883\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0x9BC68f8B2fEa572eDc0813F76C186A31E4150F6F\",\"inbox\":\"0x8A381f8822E512E50dd4679E678271E9a83226E6\",\"sequencer-inbox\":\"0x7e8B0DD71be6C1216fd7334E7e5EAE8aa2e7276B\",\"rollup\":\"0xD8c594652B205fa4c8047608FAc3ab102B6e968d\",\"validator-utils\":\"0xd9F00104B2441f6fEe7780a88a4510dB693EC659\",\"validator-wallet-creator\":\"0x59caB1B944810B3c46bF154ca6E1dC96600C8c4b\",\"deployed-at\":10483581}}]",
+    "name": "liteforge"
+  },
+  "execution": {
+    "caching": {
+      "archive": true
+    },
+    "sequencer": {
+      "enable": false,
+      "max-block-speed": "250ms",
+      "max-tx-data-size": 75000
+    }
+  },
+  "http": {
+    "addr": "0.0.0.0",
+    "api": [
+      "eth",
+      "net",
+      "web3",
+      "arb",
+      "debug",
+      "txpool"
+    ],
+    "corsdomain": "*",
+    "port": 8545,
+    "vhosts": "*"
+  },
+  "metrics-server": {
+    "addr": "0.0.0.0",
+    "port": 6070
+  },
+  "node": {
+    "batch-poster": {
+      "enable": false,
+      "max-size": 80000
+    },
+    "dangerous": {
+      "no-sequencer-coordinator": false
+    },
+    "data-availability": {
+      "enable": true,
+      "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/421614",
+      "rest-aggregator": {
+        "enable": true,
+        "urls": "PLACE_HOLDER"
+      },
+      "rpc-aggregator": {
+        "assumed-honest": 1,
+        "backends": "PLACE_HOLDER",
+        "enable": false
+      },
+      "sequencer-inbox-address": "0x7e8B0DD71be6C1216fd7334E7e5EAE8aa2e7276B"
+    },
+    "delayed-sequencer": {
+      "enable": false
+    },
+    "espresso": {
+      "batch-poster": {
+        "address-valid-ranges": [
+            {
+                "address": "0x8CF3eBbA8c916496FB9B70Ba0d7DB06733A85D97",
+                "from": 1,
+                "to": 9234811370
+            }
+        ],
+        "attestation-service-url": "http://arb-verifier.mainnets.espresso.private:8080",
+        "hotshot-first-posting-block": 450742925,
+        "hotshot-url": "https://cache.main.net.espresso.network/",
+        "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
+        "resubmit-espresso-tx-deadline": "2m",
+        "tee-type": "NITRO",
+        "txns-monitoring-interval": "1s"
+      },
+      "streamer": {
+        "address-monitor-start-l1": 450742925,
+        "address-monitor-step": 10000,
+        "hotshot-block": 12901033,
+        "txns-polling-interval": "1s"
+      }
+    },
+    "feed": {
+      "output": {
+        "enable": false,
+        "port": 9642
+      }
+    },
+    "seq-coordinator": {
+      "enable": false,
+      "lockout-duration": "30s",
+      "lockout-spare": "1s",
+      "my-url": "",
+      "redis-url": "",
+      "retry-interval": "0.5s",
+      "seq-num-duration": "24h0m0s",
+      "update-interval": "3s"
+    },
+    "sequencer": false,
+    "staker": {
+      "enable": false,
+      "strategy": "MakeNodes"
+    }
+  },
+  "parent-chain": {
+    "connection": {
+      "url": "http://erpc.mainnets.espresso.private:4000/main/evm/421614"
+    }
+  },
+  "ws": {
+    "addr": "0.0.0.0",
+    "api": [
+      "eth",
+      "net",
+      "web3",
+      "arb",
+      "txpool"
+    ],
+    "port": 8546
+  }
+}
