@@ -81,6 +81,11 @@
       }
     },
     "feed": {
+      "input": {
+        "url": [
+            "wss://liteforge.rpc.caldera.xyz/feed"
+        ]
+      }
       "output": {
         "enable": false,
         "port": 9642
