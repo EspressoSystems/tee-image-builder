@@ -41,7 +41,7 @@
     },
     "data-availability": {
       "enable": true,
-      "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/421614",
+      "parent-chain-node-url": "http://erpc.testnets.espresso.private:4000/main/evm/11155111",
       "rest-aggregator": {
         "enable": true,
         "urls": "PLACE_HOLDER"
@@ -65,7 +65,7 @@
                 "to": 9234811370
             }
         ],
-        "attestation-service-url": "http://arb-verifier.mainnets.espresso.private:8080",
+        "attestation-service-url": "http://verifier.testnets.espresso.private:8080",
         "hotshot-first-posting-block": 450742925,
         "hotshot-url": "https://cache.main.net.espresso.network/",
         "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
@@ -109,7 +109,7 @@
   },
   "parent-chain": {
     "connection": {
-      "url": "http://erpc.mainnets.espresso.private:4000/main/evm/421614"
+      "url": "http://erpc.testnets.espresso.private:4000/main/evm/11155111"
     }
   },
   "ws": {
