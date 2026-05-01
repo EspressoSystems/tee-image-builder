@@ -52,26 +52,9 @@
             "data-poster": {
                 "max-mempool-transactions": 70
             },
-            "espresso-register-signer-config": {
-                "max-base-fee": 8000000000
-            },
-            "hotshot-urls": [
-                "https://query-0.main.net.espresso.network/",
-                "https://query-1.main.net.espresso.network/",
-                "https://query-2.main.net.espresso.network/",
-                "https://query-3.main.net.espresso.network/"
-            ],
-            "espresso-tee-verifier-address": "0x4fd6D0995B3016726D5674992c1Ec1bDe0989cF5",
-            "espresso-tee-type": "NITRO",
-            "espresso-txns-polling-interval": "125ms",
-            "espresso-txns-resubmission-interval": "10s",
-            "espresso-txns-sending-interval": "125ms",
-            "espresso-tx-size-limit": "800000",
-            "light-client-address": "0x95ca91cea73239b15e5d2e5a74d02d6b5e0ae458",
             "max-delay": "1h0m0s",
             "max-empty-batch-delay": "15h0m0s",
             "l1-block-bound": "ignore",
-            "resubmit-espresso-tx-deadline": "2m",
             "post-4844-blobs": false,
             "ignore-blob-price": true
         },
@@ -88,7 +71,7 @@
             "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/42161",
             "rest-aggregator": {
                 "enable": true,
-                "urls": "https://apechain.calderachain.xyz/rest-aggregator"
+                "urls": "PLACEHOLDER"
             },
             "rpc-aggregator": {
                 "enable": true,
@@ -105,6 +88,31 @@
             "output": {
                 "enable": false,
                 "port": 9642
+            }
+        },
+        "espresso": {
+            "batch-poster": {
+                "attestation-service-url": "http://arb-verifier.mainnets.espresso.private:8080",
+                "hotshot-url": "https://cache.main.net.espresso.network/",
+                "tee-type": "NITRO",
+                "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
+                "address-valid-ranges": [
+                    {
+                        "address": "0x3918b6ecc471211a942B0A904fbFb36302348f6B",
+                        "from": 1,
+                        "to": 9234811370
+                    }
+                ],
+                "txns-resubmission-interval": "10s",
+                "txns-monitoring-interval": "125ms",
+                "hotshot-first-posting-block": 438337025,
+                "resubmit-espresso-tx-deadline": "2m"
+            },
+            "streamer": {
+                "txns-polling-interval": "125ms",
+                "hotshot-block": 11040000,
+                "address-monitor-start-l1": 438337025,
+                "address-monitor-step": 10000
             }
         }
     },
