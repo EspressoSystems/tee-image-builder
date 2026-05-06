@@ -1,0 +1,7 @@
+---
+- name: Configure Servers
+  hosts: all
+  become: yes
+  tasks:
+  roles:
+    - role: base

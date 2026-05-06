@@ -1,0 +1,6 @@
+services:
+  enclave-batch-poster:
+    image: # ghcr.io/espressosystems/aws-nitro-poster:<docker-tag>
+    devices:
+      - "/dev/nitro_enclaves:/dev/nitro_enclaves:rwm"
+    privileged: true
