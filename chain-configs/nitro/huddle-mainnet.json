@@ -87,7 +87,7 @@
                 "tee-type": "NITRO",
                 "address-valid-ranges": [
                     {
-                        "address": "0x81ce7327d269D4736Ae8871162fc8EbB42c95E45",
+                        "address": "0x09F113077AF871b7527a440AfC6B0a364338e42e",
                         "from": 1,
                         "to": 9234811370
                     }
