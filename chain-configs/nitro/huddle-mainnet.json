@@ -48,7 +48,7 @@
             "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/42161",
             "rest-aggregator": {
                 "enable": true,
-                "urls": "https://huddle01.calderachain.xyz/rest-aggregator"
+                "urls": "PLACEHOLDER"
             },
             "rpc-aggregator": {
                 "assumed-honest": 1,
@@ -81,13 +81,21 @@
         },
         "espresso": {
             "batch-poster": {
-                "attestation-service-url": "http://arb-verifier.mainnets.espresso.private:8080",
-                "hotshot-first-posting-block": 450742925,
                 "hotshot-url": "https://cache.main.net.espresso.network/",
                 "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
-                "resubmit-espresso-tx-deadline": "2m",
+                "attestation-service-url": "http://arb-verifier.mainnets.espresso.private:8080",
                 "tee-type": "NITRO",
-                "txns-monitoring-interval": "1s"
+                "address-valid-ranges": [
+                    {
+                        "address": "0x09F113077AF871b7527a440AfC6B0a364338e42e",
+                        "from": 1,
+                        "to": 9234811370
+                    }
+                ],
+                "txns-resubmission-interval": "10s",
+                "txns-monitoring-interval": "1s",
+                "hotshot-first-posting-block": 450742925,
+                "resubmit-espresso-tx-deadline": "2m"
             },
             "streamer": {
                 "address-monitor-start-l1": 450742925,
