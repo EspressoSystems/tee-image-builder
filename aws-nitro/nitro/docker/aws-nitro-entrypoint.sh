@@ -42,53 +42,6 @@ fi
 echo "Unmounting config"
 umount "${ENCLAVE_CONFIG_SOURCE_DIR}" || echo "WARNING: Failed to unmount config directory" >&2
 
-SECRET=$(aws secretsmanager get-secret-value \
-  --secret-id "$AWS_SECRET_ID" \
-  --region "$AWS_REGION" \
-  --query SecretString \
-  --output text) || {
-  echo "ERROR: Failed to retrieve config from Secrets Manager"
-  exit 1
-}
-
-SECRET_JSON=$(echo "$SECRET" | jq -r '.parameters')
-if [[ "$SECRET_JSON" == "null" || -z "$SECRET_JSON" ]]; then
-  echo "ERROR: no parameters found in retrieved secret" >&2
-  exit 1
-fi
-
-echo "Succesfully retrieved secrets from aws"
-RPC_URL=$(echo "$SECRET_JSON" | jq -r '."rpc-url"')
-if [[ "$RPC_URL" == "null" || -z "$RPC_URL" ]]; then
-  echo "ERROR: 'rpc-url' is missing or null in config" >&2
-  exit 1
-fi
-PRIVATE_KEY=$(echo "$SECRET_JSON" | jq -r '."private-key"')
-if [[ "$PRIVATE_KEY" == "null" || -z "$PRIVATE_KEY" ]]; then
-  echo "ERROR: 'private-key' is missing or null in config" >&2
-  exit 1
-fi
-# Set these to default if not present
-TXN_MONITOR_INTERVAL=$(echo "$SECRET_JSON" | jq -r '."txn-monitor-interval" // "125ms"')
-TXN_RESUBMIT_INTERVAL=$(echo "$SECRET_JSON" | jq -r '."txn-resubmit-interval" // "125ms"')
-STREAMER_POLLING_INTERVAL=$(echo "$SECRET_JSON" | jq -r '."streamer-polling-interval" //"10s"')
-DA_REST_AGGREGATOR=$(echo "$SECRET_JSON" | jq -c '."da-rest-aggregator" // empty')
-DA_RPC_AGGREGATOR=$(echo "$SECRET_JSON" | jq -c '."da-rpc-aggregator" // empty')
-CELESTIA_URL=$(echo "$SECRET_JSON" | jq -r '."celestia-url" // empty')
-DA_ENABLED=$(jq -r '.node."data-availability".enable // false' "${ENCLAVE_CONFIG_TARGET_DIR}/poster_config.json")
-CELESTIA_ENABLED=$(jq -r '.node."celestia-cfg".enable // false' "${ENCLAVE_CONFIG_TARGET_DIR}/poster_config.json")
-if [[ "$DA_ENABLED" == "true" ]]; then
-  if [[ -z "$DA_REST_AGGREGATOR" || -z "$DA_RPC_AGGREGATOR" ]]; then
-    echo "ERROR: data-availability is enabled but da-rest-aggregator or da-rpc-aggregator are missing from secret config" >&2
-    exit 1
-  fi
-fi
-if [[ "$CELESTIA_ENABLED" == "true" ]]; then
-  if [[ -z "$CELESTIA_URL" ]]; then
-    echo "ERROR: celestia is enabled but celestia-url is missing from secret config" >&2
-    exit 1
-  fi
-fi
 CONFIG_SHA=$(jq -cS 'del(
       .node."batch-poster"."parent-chain-wallet"."private-key",
       .node.espresso."batch-poster"."txns-monitoring-interval",
@@ -114,22 +67,6 @@ else
     echo "Config sha256 verified"
 fi
 
-if [[ "$DA_ENABLED" == "true" ]]; then
-  echo "Injecting data-availability aggregators from aws secrets into config"
-  jq --argjson rest "$DA_REST_AGGREGATOR" --argjson rpc "$DA_RPC_AGGREGATOR" --arg rpc_url "$RPC_URL" \
-    '.node["data-availability"]["rest-aggregator"] = $rest | .node["data-availability"]["rpc-aggregator"] = $rpc | .node["data-availability"]["parent-chain-node-url"] = $rpc_url' \
-    "${ENCLAVE_CONFIG_TARGET_DIR}/poster_config.json" > /tmp/poster_config_patched.json
-  mv /tmp/poster_config_patched.json "${ENCLAVE_CONFIG_TARGET_DIR}/poster_config.json"
-fi
-
-if [[ "$CELESTIA_ENABLED" == "true" ]]; then
-  echo "Injecting celestia URL from aws secrets into config"
-  jq --arg url "$CELESTIA_URL" \
-    '.node["celestia-cfg"]["url"] = $url' \
-    "${ENCLAVE_CONFIG_TARGET_DIR}/poster_config.json" > /tmp/poster_config_patched.json
-  mv /tmp/poster_config_patched.json "${ENCLAVE_CONFIG_TARGET_DIR}/poster_config.json"
-fi
-
 echo "Starting vsock server"
 socat VSOCK-LISTEN:8005,fork,keepalive SYSTEM:./server.sh &
 sleep 5
@@ -143,9 +80,4 @@ mount -t nfs4
 exec /usr/local/bin/nitro \
   --validation.wasm.enable-wasmroots-check=false \
   --conf.file "${ENCLAVE_CONFIG_TARGET_DIR}/poster_config.json" \
-  --node.batch-poster.parent-chain-wallet.private-key="${PRIVATE_KEY}" \
-  --parent-chain.connection.url="${RPC_URL}" \
-  --node.espresso.batch-poster.txns-monitoring-interval="${TXN_MONITOR_INTERVAL}" \
-  --node.espresso.batch-poster.txns-resubmission-interval="${TXN_RESUBMIT_INTERVAL}" \
-  --node.espresso.streamer.txns-polling-interval="${STREAMER_POLLING_INTERVAL}" \
   2>&1 | while IFS= read -r line || [[ -n "$line" ]]; do [ ${#line} -gt 4096 ] && echo "${line:0:4076}... [line truncated]" || echo "$line"; done
