@@ -50,10 +50,10 @@
         },
         "data-availability": {
             "enable": true,
-            "parent-chain-node-url": "http://erpc-0.azure.espresso.private:4000/main/evm/1",
+            "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/1",
             "rest-aggregator": {
                 "enable": true,
-                "urls": "https://appchain.calderachain.xyz/rest-aggregator"
+                "urls": "PLACEHOLDER"
             },
             "rpc-aggregator": {
                 "assumed-honest": 1,
@@ -67,17 +67,27 @@
         },
         "espresso": {
             "batch-poster": {
-                "hotshot-first-posting-block": 24642000,
-                "hotshot-url": "https://query.main.net.espresso.network/",
+                "attestation-service-url": "http://verifier.mainnets.espresso.private:8080",
+                "hotshot-first-posting-block": 24873043,
+                "hotshot-url": "https://cache.main.net.espresso.network/",
+                "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
                 "resubmit-espresso-tx-deadline": "2m",
-                "tee-type": "SGX",
+                "tee-type": "NITRO",
+                "address-valid-ranges": [
+                    {
+                        "address": "0xC5dD640885cE582464e2fCa7b169581417822e6C",
+                        "from": 1,
+                        "to": 9234811370
+                    }
+                ],
                 "txns-monitoring-interval": "1s",
                 "txns-resubmission-interval": "10s"
             },
             "streamer": {
-                "txns-polling-interval": "1s",
-                "address-monitor-start-l1": 24642000,
-                "hotshot-block": 11300000
+                "address-monitor-start-l1": 24886200,
+                "address-monitor-step": 10000,
+                "hotshot-block": 13259100,
+                "txns-polling-interval": "1s"
             }
         },
         "feed": {
@@ -113,7 +123,7 @@
     },
     "parent-chain": {
         "connection": {
-            "url": "http://erpc-0.azure.espresso.private:4000/main/evm/1"
+            "url": "http://erpc.mainnets.espresso.private:4000/main/evm/1"
         }
     },
     "persistent": {
