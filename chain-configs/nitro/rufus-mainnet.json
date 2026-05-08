@@ -49,7 +49,7 @@
             "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/1",
             "rest-aggregator": {
                 "enable": true,
-                "urls": "https://rufus.calderachain.xyz/rest-aggregator"
+                "urls": "PLACEHOLDER"
             },
             "rpc-aggregator": {
                 "assumed-honest": 1,
@@ -69,6 +69,13 @@
                 "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
                 "resubmit-espresso-tx-deadline": "2m",
                 "tee-type": "NITRO",
+                "address-valid-ranges": [
+                    {
+                        "address": "0x710fD5b7A838E4F260a3dE791377Cf40b2c67abc",
+                        "from": 1,
+                        "to": 9234811370
+                    }
+                ],
                 "txns-monitoring-interval": "1s",
                 "txns-resubmission-interval": "10s"
             },
