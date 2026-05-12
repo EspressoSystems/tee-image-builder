@@ -1,0 +1,13 @@
+version: v1
+name: "chain-adjacent-service"
+target: "enclaver-cas:latest"
+sources:
+  app: "cas-image:latest"
+defaults:
+  memory_mb: 4096
+  cpu_count: 2
+egress:
+  allow:
+    - "*"
+    - "**"
+    - 0.0.0.0/0

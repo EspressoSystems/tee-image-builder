@@ -1,0 +1,69 @@
+{
+    "espresso_client": {
+        "base_url": "PLACEHOLDER",
+        "client_timeout_secs": 30
+    },
+    "rollup": {
+        "type": "nitro",
+        "namespace_id": 0,
+        "stack": {
+            "chain_id": 0,
+            "l1_ws_url": "PLACEHOLDER",
+            "sequencer_inbox_address": "0x0000000000000000000000000000000000000000",
+            "legacy_signer_addresses": [],
+            "log_scan_step": 10000,
+            "max_l1_blocks_to_scan_on_startup": 0,
+            "feed": {
+                "web_socket_url": "PLACEHOLDER",
+                "current_message_count": 0,
+                "client": {
+                    "reconnect_initial_backoff": "1s",
+                    "reconnect_maximum_backoff": "64s",
+                    "timeout": "20s",
+                    "enable_compression": true,
+                    "require_feed_server_version": false,
+                    "require_chain_id": false,
+                    "trusted_sequencer_addresses": []
+                },
+                "server": {
+                    "broadcast_channel_capacity": 512,
+                    "ws_server": {
+                        "addr": "0.0.0.0",
+                        "port": 9642,
+                        "ping": "5s",
+                        "client_timeout": "15s",
+                        "write_timeout": "10s",
+                        "require_version": false,
+                        "enable_compression": false,
+                        "require_compression": false
+                    }
+                }
+            }
+        }
+    },
+    "da_server": {
+        "listen_addr": "0.0.0.0:9650",
+        "da_providers": []
+    },
+    "submitter": {
+        "max_in_flight": 4,
+        "finalization_wait_ms": 5000,
+        "initial_backoff_ms": 100,
+        "max_backoff_ms": 10000,
+        "max_finalization_poll_retries": 5
+    },
+    "streamer": {
+        "max_sequencer_number_drift": 1000,
+        "initial_backoff_ms": 1000,
+        "max_backoff_ms": 30000,
+        "retry_broadcast_delay_ms": 300,
+        "starting_pos": 0,
+        "starting_hotshot_height": 0
+    },
+    "advanced": {
+        "espresso_finalized_message_channel_capacity": 100,
+        "verification_channel_capacity": 100,
+        "hotshot_transaction_channel_capacity": 300
+    },
+    "is_fresh_deployment": true
+}

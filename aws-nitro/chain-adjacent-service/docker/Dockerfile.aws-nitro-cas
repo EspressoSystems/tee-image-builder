@@ -1,0 +1,56 @@
+ARG CAS_IMAGE_PATH
+FROM ${CAS_IMAGE_PATH}
+USER root
+
+EXPOSE 9642
+EXPOSE 9650
+
+ARG AWS_REGION
+ARG AWS_SECRET_ID
+
+# Convert build args to environment variables
+ENV AWS_REGION=${AWS_REGION} \
+    AWS_SECRET_ID=${AWS_SECRET_ID}
+
+# Environment variables
+ENV HOME=/home/nonroot
+ARG CONFIG_HASH
+ENV EXPECTED_CONFIG_SHA256=${CONFIG_HASH}
+ARG ENFORCE_CONFIG
+ENV ENFORCE_CONFIG=${ENFORCE_CONFIG}
+
+COPY --chown=nonroot:nonroot chain-adjacent-service/docker/aws-nitro-entrypoint.sh /aws-nitro-entrypoint.sh
+COPY --chown=nonroot:nonroot chain-adjacent-service/docker/server.sh /server.sh
+RUN chmod +x /server.sh
+RUN chmod +x /aws-nitro-entrypoint.sh
+
+# Install required packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      socat \
+      nfs-common \
+      procps \
+      net-tools \
+      iproute2 \
+      curl \
+      jq \
+      unzip \
+    && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+    && unzip awscliv2.zip \
+    && ./aws/install \
+    && rm -rf awscliv2.zip aws \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create config directories
+RUN mkdir -p \
+    /config \
+    /mnt/config && \
+    chown -R nonroot:nonroot \
+    /mnt/config \
+    /config \
+    "${HOME}"
+
+USER nonroot
+
+ENTRYPOINT ["/aws-nitro-entrypoint.sh"]
