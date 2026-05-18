@@ -1,0 +1,288 @@
+##############################################################################
+# cas.yml
+#
+# Builds a self-contained AWS Nitro EIF runner image for the CAS Rust service
+# and pushes a single tag to the registry:
+#
+#   aws-nitro-cas:<chain>-<tag>  — self-contained runner (what Terraform/ECS deploys).
+#
+# Config source of truth: chain-configs/cas/<chain>.json
+#   The config is baked into the image, so its bytes are part of PCR0.
+#   CONFIG_HASH is computed with jq and embedded as an env var/label for ops
+#   correlation — PCR0 + KMS attestation is what actually enforces integrity.
+#
+#   Excluded from the hash (runtime-injected from AWS Secrets Manager, trusted
+#   via IAM rather than measurement):
+#     - espresso_client.base_url
+#     - rollup.stack.feed.web_socket_url
+#     - rollup.stack.l1_ws_url
+#     - da_server.da_providers[].endpoint_url
+#
+##############################################################################
+
+name: Build EIF Image (CAS)
+
+run-name: Build EIF Image (CAS) - ${{ inputs.chain || 'devnet' }} @ ${{ inputs.cas_image_path || 'main' }}
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      chain:
+        description: >
+          CAS chain to build, e.g. devnet.
+          Selects chain-configs/cas/<chain>.json for config and hash computation.
+        required: true
+      cas_image_path:
+        type: string
+        description: 'Full CAS service image path (e.g. ghcr.io/espressosystems/cas:v1.2.3)'
+        required: true
+      aws_region:
+        type: string
+        description: 'AWS region for Secrets Manager'
+        required: true
+      aws_secret_id:
+        type: string
+        description: 'AWS Secrets Manager secret ARN'
+        required: true
+      enforce_config:
+        type: boolean
+        description: 'Enforce config hash check inside the enclave. Disable only for debugging — produces a distinct PCR0.'
+        default: true
+
+env:
+  REGISTRY: ghcr.io
+  EIF_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/aws-nitro-cas
+  CHAIN: ${{ github.event.inputs.chain || 'devnet' }}
+
+jobs:
+  build-eif:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set variables
+        run: |
+          echo "EIF_IMAGE_NAME=${EIF_IMAGE_NAME,,}" >> $GITHUB_ENV
+
+          CAS_IMAGE_PATH="${{ github.event.inputs.cas_image_path || 'ghcr.io/espressosystems/cas:main' }}"
+          CAS_TAG=$(echo "${CAS_IMAGE_PATH}" | sed 's/.*://')
+          echo "CAS_IMAGE_PATH=${CAS_IMAGE_PATH}" >> $GITHUB_ENV
+          echo "CAS_IMAGE_TAG=${CAS_TAG}" >> $GITHUB_ENV
+
+          CONFIG_PATH="chain-configs/cas/${{ env.CHAIN }}.json"
+          echo "CONFIG_PATH=${CONFIG_PATH}" >> $GITHUB_ENV
+
+          ENFORCE_CONFIG="${{ github.event.inputs.enforce_config || 'true' }}"
+          echo "ENFORCE_CONFIG=${ENFORCE_CONFIG}" >> $GITHUB_ENV
+
+          echo "Using CAS image: ${CAS_IMAGE_PATH}"
+          echo "Using config: ${CONFIG_PATH}"
+          echo "Enforce config: ${ENFORCE_CONFIG}"
+
+      - name: Compute config hash
+        run: |
+          # Computed with jq over a canonicalized form. The excluded fields are
+          # runtime-injected from AWS Secrets Manager and trusted via IAM rather
+          # than baked into PCR0.
+          CONFIG_HASH=$(jq -cS 'del(
+            .espresso_client.base_url,
+            .rollup.stack.feed.web_socket_url,
+            .rollup.stack.l1_ws_url,
+            .da_server.da_providers[].endpoint_url
+          )' "${{ env.CONFIG_PATH }}" | sha256sum | cut -d' ' -f1)
+          echo "CONFIG_HASH=${CONFIG_HASH}" >> $GITHUB_ENV
+          echo "Config hash: ${CONFIG_HASH}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build app image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./aws-nitro/cas/docker/Dockerfile
+          build-args: |
+            SOURCE_IMAGE=${{ env.CAS_IMAGE_PATH }}
+            CHAIN=${{ env.CHAIN }}
+            CONFIG_HASH=${{ env.CONFIG_HASH }}
+            AWS_REGION=${{ github.event.inputs.aws_region }}
+            AWS_SECRET_ID=${{ github.event.inputs.aws_secret_id }}
+            ENFORCE_CONFIG=${{ env.ENFORCE_CONFIG }}
+          push: false
+          tags: cas-image:latest
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Install enclaver
+        run: |
+          # Verify SHA256 before extracting. A malicious binary could produce a
+          # fraudulent EIF with a fake PCR0.
+          ENCLAVER_URL="https://github.com/enclaver-io/enclaver/releases/download/v0.5.0/enclaver-linux-x86_64-v0.5.0.tar.gz"
+          ENCLAVER_SHA256="c1a09f9dc4c687bf321bbfa0cf42451a3b1618457e21c39498884cd3bce0b3e3"
+          ENCLAVER_TARBALL="/tmp/enclaver.tar.gz"
+          curl -fsSL "${ENCLAVER_URL}" -o "${ENCLAVER_TARBALL}"
+          echo "${ENCLAVER_SHA256}  ${ENCLAVER_TARBALL}" | sha256sum -c
+          tar xz --strip-components=1 -C /usr/local/bin enclaver-linux-x86_64-v0.5.0/enclaver < "${ENCLAVER_TARBALL}"
+          rm -f "${ENCLAVER_TARBALL}"
+          enclaver --version
+
+      - name: Build EIF and capture measurements
+        run: |
+          EIF_TAG="${{ env.EIF_IMAGE_NAME }}:${{ env.CHAIN }}-${{ env.CAS_IMAGE_TAG }}"
+          echo "EIF_TAG=${EIF_TAG}" >> $GITHUB_ENV
+
+          # enclaver build wraps cas-image:latest (from the previous step) into an EIF
+          # and produces a local image tagged as per enclaver.yaml target field.
+          BUILD_OUTPUT=$(sudo enclaver build --file ./aws-nitro/cas/enclaver/enclaver.yaml)
+          echo "Build output: ${BUILD_OUTPUT}"
+
+          PCR0=$(echo "${BUILD_OUTPUT}" | grep -oP '"PCR0": "\K[^"]+')
+          PCR1=$(echo "${BUILD_OUTPUT}" | grep -oP '"PCR1": "\K[^"]+')
+          PCR2=$(echo "${BUILD_OUTPUT}" | grep -oP '"PCR2": "\K[^"]+')
+
+          if [ -z "${PCR0}" ]; then
+            echo "ERROR: empty PCR0 — enclaver build failed"
+            exit 1
+          fi
+
+          ENCLAVE_HASH=$(cast keccak "0x${PCR0}")
+          echo "PCR0=${PCR0}" >> $GITHUB_ENV
+          echo "PCR1=${PCR1}" >> $GITHUB_ENV
+          echo "PCR2=${PCR2}" >> $GITHUB_ENV
+          echo "ENCLAVE_HASH=${ENCLAVE_HASH}" >> $GITHUB_ENV
+          echo "PCR0 keccak hash: ${ENCLAVE_HASH}"
+
+      - name: Publish
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RELEASE_TAG="${{ env.CHAIN }}-${{ env.CAS_IMAGE_TAG }}"
+          RELEASE_URL="${{ github.server_url }}/${{ github.repository }}/releases/tag/${RELEASE_TAG}"
+          BASE_URL="${{ github.server_url }}/${{ github.repository }}/releases/download/${RELEASE_TAG}"
+          CONFIG_URL="${BASE_URL}/committed-config.json"
+          echo "RELEASE_URL=${RELEASE_URL}" >> $GITHUB_ENV
+
+          # measurements.json. Source of truth for all verifiable values
+          jq -n \
+            --arg chain "${{ env.CHAIN }}" \
+            --arg cas_image "${{ env.CAS_IMAGE_PATH }}" \
+            --arg runner_image "${{ env.EIF_TAG }}" \
+            --arg pcr0 "${{ env.PCR0 }}" \
+            --arg pcr1 "${{ env.PCR1 }}" \
+            --arg pcr2 "${{ env.PCR2 }}" \
+            --arg enclave_hash "${{ env.ENCLAVE_HASH }}" \
+            --arg config_hash "${{ env.CONFIG_HASH }}" \
+            --arg config_url "${CONFIG_URL}" \
+            --arg build_workflow "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --arg git_sha "${{ github.sha }}" \
+            '{
+              chain: $chain,
+              "tee-type": "AWS Nitro (CAS)",
+              "cas-image": $cas_image,
+              "runner-image": $runner_image,
+              pcr0: $pcr0,
+              pcr1: $pcr1,
+              pcr2: $pcr2,
+              "enclave-hash": $enclave_hash,
+              "config-hash": $config_hash,
+              "config-url": $config_url,
+              "build-workflow": $build_workflow,
+              "git-sha": $git_sha
+            }' > /tmp/measurements.json
+
+          # Release notes generated from measurements.json
+          {
+            echo "## Chain: \`${{ env.CHAIN }}\`"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            jq -r '
+              "| **TEE type** | " + .["tee-type"] + " |",
+              "| **CAS image** | `" + .["cas-image"] + "` |",
+              "| **Runner image** | `" + .["runner-image"] + "` |",
+              "| **PCR0** | `" + .pcr0 + "` |",
+              "| **PCR1** | `" + .pcr1 + "` |",
+              "| **PCR2** | `" + .pcr2 + "` |",
+              "| **Enclave hash (keccak)** | `" + .["enclave-hash"] + "` |",
+              "| **Config hash** | `" + .["config-hash"] + "` |",
+              "| **Build workflow** | " + .["build-workflow"] + " |"
+            ' /tmp/measurements.json
+            echo ""
+            echo "### Assets"
+            echo "- \`committed-config.json\` — full public config with placeholders for private values"
+            echo "- \`measurements.json\` — machine-readable PCR values and hashes for programmatic verification"
+          } > /tmp/release-notes.md
+
+          gh release create "${RELEASE_TAG}" \
+            --title "[Nitro/CAS] ${{ env.CHAIN }} @ ${{ env.CAS_IMAGE_TAG }}" \
+            --notes-file /tmp/release-notes.md \
+            2>/dev/null || true
+          gh release edit "${RELEASE_TAG}" \
+            --title "[Nitro/CAS] ${{ env.CHAIN }} @ ${{ env.CAS_IMAGE_TAG }}" \
+            --notes-file /tmp/release-notes.md
+          gh release upload "${RELEASE_TAG}" \
+            "${{ env.CONFIG_PATH }}#committed-config.json" \
+            /tmp/measurements.json \
+            --clobber
+
+          # OCI labels. Embed key values and link to release for full details
+          BUILDCTX=$(mktemp -d)
+          {
+            echo "FROM enclaver-cas"
+            echo 'LABEL enclave.pcr0="${{ env.PCR0 }}"'
+            echo 'LABEL enclave.pcr1="${{ env.PCR1 }}"'
+            echo 'LABEL enclave.pcr2="${{ env.PCR2 }}"'
+            echo 'LABEL enclave.hash="${{ env.ENCLAVE_HASH }}"'
+            echo 'LABEL enclave.chain="${{ env.CHAIN }}"'
+            echo 'LABEL enclave.cas-image="${{ env.CAS_IMAGE_PATH }}"'
+            echo 'LABEL enclave.config-hash="${{ env.CONFIG_HASH }}"'
+            echo 'LABEL enclave.enforce-config="${{ env.ENFORCE_CONFIG }}"'
+            echo "LABEL enclave.config-url=\"${CONFIG_URL}\""
+            echo "LABEL enclave.release-url=\"${RELEASE_URL}\""
+            echo 'LABEL org.opencontainers.image.source="${{ github.server_url }}/${{ github.repository }}"'
+            echo 'LABEL org.opencontainers.image.revision="${{ github.sha }}"'
+            echo 'LABEL build.workflow.url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"'
+          } > "$BUILDCTX/Dockerfile"
+          docker build -t "${{ env.EIF_TAG }}" "$BUILDCTX"
+          rm -rf "$BUILDCTX" /tmp/release-notes.md /tmp/measurements.json
+          docker push "${{ env.EIF_TAG }}"
+
+      - name: Summary
+        run: |
+          echo "## EIF Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Chain** | \`${{ env.CHAIN }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Config hash** | \`${{ env.CONFIG_HASH }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **PCR0** | \`${{ env.PCR0 }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Enclave hash (keccak)** | \`${{ env.ENCLAVE_HASH }}\` |" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ env.RELEASE_URL }}" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Full details: ${{ env.RELEASE_URL }}" >> $GITHUB_STEP_SUMMARY
+          fi
