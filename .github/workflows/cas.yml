@@ -40,7 +40,7 @@ on:
         required: true
       cas_image_path:
         type: string
-        description: 'Full CAS service image path (e.g. ghcr.io/espressosystems/cas:v1.2.3)'
+        description: 'Full CAS service image path (e.g. ghcr.io/espressosystems/chain-adjacent-service:v1.2.3)'
         required: true
       aws_region:
         type: string
@@ -75,7 +75,7 @@ jobs:
         run: |
           echo "EIF_IMAGE_NAME=${EIF_IMAGE_NAME,,}" >> $GITHUB_ENV
 
-          CAS_IMAGE_PATH="${{ github.event.inputs.cas_image_path || 'ghcr.io/espressosystems/cas:main' }}"
+          CAS_IMAGE_PATH="${{ github.event.inputs.cas_image_path || 'ghcr.io/espressosystems/chain-adjacent-service:main' }}"
           CAS_TAG=$(echo "${CAS_IMAGE_PATH}" | sed 's/.*://')
           echo "CAS_IMAGE_PATH=${CAS_IMAGE_PATH}" >> $GITHUB_ENV
           echo "CAS_IMAGE_TAG=${CAS_TAG}" >> $GITHUB_ENV
@@ -83,7 +83,7 @@ jobs:
           CONFIG_PATH="chain-configs/cas/${{ env.CHAIN }}.json"
           echo "CONFIG_PATH=${CONFIG_PATH}" >> $GITHUB_ENV
 
-          ENFORCE_CONFIG="${{ github.event.inputs.enforce_config || 'true' }}"
+          ENFORCE_CONFIG="${{ github.event.inputs.enforce_config || 'false' }}"
           echo "ENFORCE_CONFIG=${ENFORCE_CONFIG}" >> $GITHUB_ENV
 
           echo "Using CAS image: ${CAS_IMAGE_PATH}"
