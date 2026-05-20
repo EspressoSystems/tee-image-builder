@@ -40,9 +40,10 @@
         "max_in_flight": 1000
     },
     "key_manager": {
-    "tee_verifier_address": "0x4451AcB48232a2df8fA89Fa12cEbdB5CDA3e56BA",
-    "attestation_verifier_url": "http://localhost:9000",
-    "tee_type": "test"
-  },
+        "rpc_url": "https://arbitrum-sepolia.drpc.org",
+        "tee_verifier_address": "0x4451AcB48232a2df8fA89Fa12cEbdB5CDA3e56BA",
+        "attestation_verifier_url": "http://localhost:9000",
+        "tee_type": "test"
+    },
     "is_fresh_deployment": true
 }
