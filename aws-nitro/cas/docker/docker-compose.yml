@@ -1,0 +1,9 @@
+services:
+  cas-enclave:
+    image: # ghcr.io/espressosystems/aws-nitro-cas:<docker-tag>
+    devices:
+      - "/dev/nitro_enclaves:/dev/nitro_enclaves:rwm"
+    ports:
+      - "8000:8000"
+      - "9643:9643"
+    privileged: true
