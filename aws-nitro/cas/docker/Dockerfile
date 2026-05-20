@@ -33,7 +33,7 @@ ENV AWS_REGION=${AWS_REGION} \
 USER root
 RUN mkdir -p /etc/cas && chmod 0755 /etc/cas
 COPY --chmod=644 chain-configs/cas/${CHAIN}.json /etc/cas/config.json
-USER cas
+USER user
 
 # Inbound listeners. enclaver-run bridges these to TCP on the outer container.
 # 8000  -> da_server.listen_addr
