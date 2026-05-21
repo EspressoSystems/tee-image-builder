@@ -17,11 +17,14 @@ ARG AWS_REGION
 ARG AWS_SECRET_ID
 ARG ENFORCE_CONFIG=true
 
+ARG RUST_LOG=info
+
 ENV AWS_REGION=${AWS_REGION} \
     AWS_SECRET_ID=${AWS_SECRET_ID} \
     EXPECTED_CONFIG_SHA256=${CONFIG_HASH} \
     ENFORCE_CONFIG=${ENFORCE_CONFIG} \
-    CAS_CONFIG_PATH=/etc/cas/config.json
+    CAS_CONFIG_PATH=/etc/cas/config.json \
+    RUST_LOG=${RUST_LOG}
 
 # Bake the committed config. PCR0 attests to these exact bytes; an attacker
 # swapping the file post-build invalidates PCR0 and the KMS policy refuses the
