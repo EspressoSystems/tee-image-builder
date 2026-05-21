@@ -45,5 +45,5 @@
     "attestation_verifier_url": "http://localhost:9000",
     "tee_type": "test"
   },
-  "is_fresh_deployment": false
+  "is_fresh_deployment": true
 }
