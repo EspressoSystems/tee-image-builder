@@ -1,43 +1,52 @@
 {
-    "espresso_client": {
-        "base_url": "http://localhost:41000"
-    },
-    "rollup": {
-        "type": "nitro",
-        "namespace_id": 412346,
-        "stack": {
-            "chain_id": 412346,
-            "feed": {
-                "web_socket_url": "ws://localhost:9642",
-                "current_message_count": 0,
-                "client": {
-                    "trusted_sequencer_addresses": [
-                        "0xee9cFf7d4C022c6c33cf0C9ca46ad5634612E9E3"
-                    ]
-                },
-                "server": {
-                    "ws_server": {
-                        "port": 9643,
-                        "enable_compression": true
-                    }
-                }
-            },
-            "l1_ws_url": "ws://localhost:8546",
-            "sequencer_inbox_address": "0xee9cFf7d4C022c6c33cf0C9ca46ad5634612E9E3"
+  "espresso_client": {
+    "base_url": "https://cache.decaf.testnet.espresso.network/"
+  },
+  "streamer": {
+    "starting_hotshot_height": 9356691
+  },
+  "rollup": {
+    "type": "nitro",
+    "namespace_id": 412346,
+    "stack": {
+      "chain_id": 412346,
+      "feed": {
+        "web_socket_url": "wss://arbitrum-sepolia.drpc.org",
+        "current_message_count": 0,
+        "client": {
+          "trusted_sequencer_addresses": [
+            "0x74717f74548912dbdDc0f240cD33AD7AdC0048b2"
+          ]
+        },
+        "server": {
+          "ws_server": {
+            "port": 9643,
+            "enable_compression": true
+          }
         }
-    },
-    "da_server": {
-        "listen_addr": "0.0.0.0:8000",
-        "da_providers": [
-            {
-                "name": "anytrust",
-                "endpoint_url": "http://localhost:9881",
-                "is_anytrust": true
-            }
-        ]
-    },
-    "submitter": {
-        "max_in_flight": 1000
-    },
-    "is_fresh_deployment": true
+      },
+      "l1_http_url": "https://arbitrum-sepolia.drpc.org",
+      "l1_ws_url": "wss://arbitrum-sepolia.drpc.org",
+      "sequencer_inbox_address": "0x74717f74548912dbdDc0f240cD33AD7AdC0048b2"
+    }
+  },
+  "da_server": {
+    "listen_addr": "0.0.0.0:8000",
+    "da_providers": [
+      {
+        "name": "anytrust",
+        "endpoint_url": "http://localhost:9881",
+        "is_anytrust": true
+      }
+    ]
+  },
+  "submitter": {
+    "max_in_flight": 1000
+  },
+  "key_manager": {
+    "tee_verifier_address": "0x4451AcB48232a2df8fA89Fa12cEbdB5CDA3e56BA",
+    "attestation_verifier_url": "http://localhost:9000",
+    "tee_type": "test"
+  },
+  "is_fresh_deployment": true
 }
