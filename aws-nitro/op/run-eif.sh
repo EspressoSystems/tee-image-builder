@@ -33,22 +33,6 @@ echo "Committed params loaded from ${COMMITTED_PARAMS_FILE}"
 : ${ESPRESSO_ATTESTATION_SERVICE_URL:?Error: ESPRESSO_ATTESTATION_SERVICE_URL is required}
 : ${EIGENDA_PROXY_URL:?Error: EIGENDA_PROXY_URL is required}
 
-# Committed params — validated against enclave hash once enforcement is wired up
-: ${ESPRESSO_LIGHT_CLIENT_ADDR:?Error: ESPRESSO_LIGHT_CLIENT_ADDR is required}
-: ${COMPRESSION_ALGO:?Error: COMPRESSION_ALGO is required}
-: ${MAX_CHANNEL_DURATION:?Error: MAX_CHANNEL_DURATION is required}
-: ${TARGET_NUM_FRAMES:?Error: TARGET_NUM_FRAMES is required}
-: ${MAX_L1_TX_SIZE_BYTES:?Error: MAX_L1_TX_SIZE_BYTES is required}
-: ${ALTDA_DA_SERVICE:?Error: ALTDA_DA_SERVICE is required}
-: ${ALTDA_VERIFY_ON_READ:?Error: ALTDA_VERIFY_ON_READ is required}
-: ${ALTDA_MAX_CONCURRENT_DA_REQUESTS:?Error: ALTDA_MAX_CONCURRENT_DA_REQUESTS is required}
-: ${ALTDA_PUT_TIMEOUT:?Error: ALTDA_PUT_TIMEOUT is required}
-: ${ALTDA_GET_TIMEOUT:?Error: ALTDA_GET_TIMEOUT is required}
-: ${SUB_SAFETY_MARGIN:?Error: SUB_SAFETY_MARGIN is required}
-: ${TXMGR_MIN_TIP_CAP:?Error: TXMGR_MIN_TIP_CAP is required}
-: ${MAX_PENDING_TX:?Error: MAX_PENDING_TX is required}
-: ${RPC_ENABLE_ADMIN:?Error: RPC_ENABLE_ADMIN is required}
-
 # Authentication: either a remote signer (SIGNER_ENDPOINT + SIGNER_ADDRESS) or a
 # plaintext private key (OP_BATCHER_PRIVATE_KEY). Remote signer takes precedence
 # when both are set.
@@ -75,20 +59,6 @@ if [ -n "${SIGNER_ENDPOINT:-}" ]; then
 else
     echo "Auth: plaintext private key"
 fi
-echo "Light Client Address: $ESPRESSO_LIGHT_CLIENT_ADDR"
-echo "Compression Algo: $COMPRESSION_ALGO"
-echo "Max Channel Duration: $MAX_CHANNEL_DURATION"
-echo "Target Num Frames: $TARGET_NUM_FRAMES"
-echo "Max L1 Tx Size Bytes: $MAX_L1_TX_SIZE_BYTES"
-echo "AltDA DA Service: $ALTDA_DA_SERVICE"
-echo "AltDA Verify On Read: $ALTDA_VERIFY_ON_READ"
-echo "AltDA Max Concurrent DA Requests: $ALTDA_MAX_CONCURRENT_DA_REQUESTS"
-echo "AltDA Put Timeout: $ALTDA_PUT_TIMEOUT"
-echo "AltDA Get Timeout: $ALTDA_GET_TIMEOUT"
-echo "Sub Safety Margin: $SUB_SAFETY_MARGIN"
-echo "TxMgr Min Tip Cap: $TXMGR_MIN_TIP_CAP"
-echo "Max Pending Tx: $MAX_PENDING_TX"
-echo "RPC Enable Admin: $RPC_ENABLE_ADMIN"
 echo "Extra Args: $EXTRA_ARGS"
 echo "Debug Mode: $ENCLAVE_DEBUG"
 echo "====================================="
@@ -112,23 +82,6 @@ send_batcher_args() {
         "--espresso.espresso-attestation-service=$ESPRESSO_ATTESTATION_SERVICE_URL" \
         "--altda.enabled=true" \
         "--altda.da-server=$EIGENDA_PROXY_URL"
-
-    # Committed params — enforced against enclave hash once wired up
-    printf '%s\0' \
-        "--espresso.light-client-addr=$ESPRESSO_LIGHT_CLIENT_ADDR" \
-        "--compression-algo=$COMPRESSION_ALGO" \
-        "--max-channel-duration=$MAX_CHANNEL_DURATION" \
-        "--target-num-frames=$TARGET_NUM_FRAMES" \
-        "--max-l1-tx-size-bytes=$MAX_L1_TX_SIZE_BYTES" \
-        "--altda.da-service=$ALTDA_DA_SERVICE" \
-        "--altda.verify-on-read=$ALTDA_VERIFY_ON_READ" \
-        "--altda.max-concurrent-da-requests=$ALTDA_MAX_CONCURRENT_DA_REQUESTS" \
-        "--altda.put-timeout=$ALTDA_PUT_TIMEOUT" \
-        "--altda.get-timeout=$ALTDA_GET_TIMEOUT" \
-        "--sub-safety-margin=$SUB_SAFETY_MARGIN" \
-        "--txmgr.min-tip-cap=$TXMGR_MIN_TIP_CAP" \
-        "--max-pending-tx=$MAX_PENDING_TX" \
-        "--rpc.enable-admin=$RPC_ENABLE_ADMIN"
 
     # Auth flags: remote signer takes precedence over plaintext key.
     if [ -n "${SIGNER_ENDPOINT:-}" ]; then
