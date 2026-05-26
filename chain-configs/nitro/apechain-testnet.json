@@ -1,0 +1,134 @@
+{
+    "chain": {
+        "info-json": "[{\"chain-id\":3313939,\"parent-chain-id\":421614,\"chain-name\":\"apechain-tnet\",\"chain-config\":{\"chainId\":3313939,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":true,\"InitialArbOSVersion\":32,\"Celestia\":false,\"EigenDA\":false,\"InitialChainOwner\":\"0x0a187ba6ed9c9930b5e11da8d6e1b5dd3fae30e8\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0xd98A85F305EC8938bc9A6f7F8CA633598e18b3df\",\"inbox\":\"0x2EC6647a16C85031Efb9C1836A903771010c21cB\",\"sequencer-inbox\":\"0x9Ed60B7875f0bbc8b47C31040d28f0E318ebdb4A\",\"rollup\":\"0x54B0f320344F07F3e53ACbe9A18Ca3868812da98\",\"validator-utils\":\"0xe4D7651Da9890b6359C6CFe1853A5f33fC4b4Db1\",\"validator-wallet-creator\":\"0x391b0087911Cb74057ECa1f8B1a2E91288a91b2e\",\"deployed-at\":206580399}}]",
+        "name": "apechain-tnet"
+    },
+    "execution": {
+        "caching": {
+            "archive": true
+        },
+        "forwarding-target": "null",
+        "sequencer": {
+            "enable": false,
+            "max-block-speed": "250ms",
+            "max-tx-data-size": 75000
+        }
+    },
+    "http": {
+        "addr": "0.0.0.0",
+        "api": [
+            "eth",
+            "net",
+            "web3",
+            "arb",
+            "debug",
+            "txpool"
+        ],
+        "corsdomain": "*",
+        "port": 8545,
+        "vhosts": "*"
+    },
+    "node": {
+        "batch-poster": {
+            "data-poster": {
+                "max-mempool-transactions": 70
+            },
+            "enable": true,
+            "ignore-blob-price": true,
+            "l1-block-bound": "ignore",
+            "max-delay": "1h0m0s",
+            "max-empty-batch-delay": "15h0m0s",
+            "max-size": 80000,
+            "parent-chain-wallet": {
+                "private-key": "PLACEHOLDER"
+            },
+            "poll-interval": "60s",
+            "post-4844-blobs": false,
+            "wait-for-max-delay": true
+        },
+        "dangerous": {
+            "no-sequencer-coordinator": false
+        },
+        "data-availability": {
+            "enable": true,
+            "parent-chain-node-url": "PLACEHOLDER",
+            "rest-aggregator": {
+                "enable": true,
+                "urls": "PLACEHOLDER"
+            },
+            "rpc-aggregator": {
+                "assumed-honest": 1,
+                "backends": "PLACEHOLDER",
+                "enable": true
+            },
+            "sequencer-inbox-address": "0x9Ed60B7875f0bbc8b47C31040d28f0E318ebdb4A"
+        },
+        "delayed-sequencer": {
+            "enable": false
+        },
+        "espresso": {
+            "batch-poster": {
+                "attestation-service-url": "http://arb-verifier.testnets.espresso.private:8080/",
+                "hotshot-url": "https://cache.decaf.testnet.espresso.network/",
+                "resubmit-espresso-tx-deadline": "2m",
+                "tee-type": "NITRO",
+                "txns-monitoring-interval": "125ms",
+                "txns-resubmission-interval": "10s",
+                "hotshot-first-posting-block": "243303429",
+                "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs"
+            },
+            "streamer": {
+                "txns-polling-interval": "125ms",
+                "address-monitor-start-l1": "243303429",
+                "hotshot-block": "7021000",
+                "address-monitor-step": 2000
+            }
+        },
+        "feed": {
+            "input": {
+                "url": [
+                    "wss://apechain-tnet.rpc.caldera.xyz/feed"
+                ]
+            },
+            "output": {
+                "enable": false,
+                "port": 9642
+            }
+        },
+        "seq-coordinator": {
+            "enable": false,
+            "lockout-duration": "30s",
+            "lockout-spare": "1s",
+            "my-url": "",
+            "redis-url": "",
+            "retry-interval": "0.5s",
+            "seq-num-duration": "24h0m0s",
+            "update-interval": "3s"
+        },
+        "sequencer": false,
+        "staker": {
+            "enable": false,
+            "strategy": "MakeNodes"
+        }
+    },
+    "parent-chain": {
+        "connection": {
+            "url": "http://arbitrum.testnets.espresso.private:8545"
+        }
+    },
+    "persistent": {
+        "chain": "local"
+    },
+    "ws": {
+        "addr": "0.0.0.0",
+        "api": [
+            "eth",
+            "net",
+            "web3",
+            "arb",
+            "debug",
+            "txpool"
+        ],
+        "port": 8546
+    }
+}

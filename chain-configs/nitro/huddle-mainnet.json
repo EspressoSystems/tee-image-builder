@@ -1,0 +1,128 @@
+{
+    "chain": {
+        "info-json": "[{\"chain-id\":12323,\"parent-chain-id\":42161,\"chain-name\":\"huddle01\",\"chain-config\":{\"chainId\":12323,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":true,\"InitialArbOSVersion\":32,\"EigenDA\":false,\"Celestia\":false,\"InitialChainOwner\":\"0xa56236aa343cede653c03838de6e8d6a35c2e4ae\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0x4A346da02EA2Fa6E49834C409165c6D6527ae522\",\"inbox\":\"0x54F6B125e793eB87D0d00bc7179d179Bc380F3De\",\"sequencer-inbox\":\"0x512c22Be4d0bEC6A07cfA7B5ED63E612Ee8fE4D5\",\"rollup\":\"0xEe0f38fA8B33EF8f0AAE3F26c67E173D2379e31e\",\"validator-utils\":\"0xaB36aec5517C346D21b9C19429BAA5aa87D17fCa\",\"validator-wallet-creator\":\"0x5a6C98F6A60BDC02cE4d8AD43b4Fc88Fe5b38856\",\"deployed-at\":280749021}}]",
+        "name": "huddle01"
+    },
+    "execution": {
+        "caching": {
+            "archive": true
+        },
+        "forwarding-target": "null",
+        "sequencer": {
+            "enable": false,
+            "max-block-speed": "250ms",
+            "max-tx-data-size": 85000
+        }
+    },
+    "http": {
+        "addr": "0.0.0.0",
+        "api": [
+            "eth",
+            "net",
+            "web3",
+            "arb",
+            "debug",
+            "txpool"
+        ],
+        "corsdomain": "*",
+        "port": 8545,
+        "vhosts": "*"
+    },
+    "node": {
+        "batch-poster": {
+            "enable": true,
+            "l1-block-bound": "finalized",
+            "max-delay": "5m0s",
+            "max-empty-batch-delay": "15h0m0s",
+            "max-size": 90000,
+            "parent-chain-wallet": {
+                "private-key": "PLACEHOLDER"
+            },
+            "wait-for-max-delay": true
+        },
+        "dangerous": {
+            "no-sequencer-coordinator": true
+        },
+        "data-availability": {
+            "enable": true,
+            "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/42161",
+            "rest-aggregator": {
+                "enable": true,
+                "urls": "PLACEHOLDER"
+            },
+            "rpc-aggregator": {
+                "assumed-honest": 1,
+                "backends": "PLACEHOLDER",
+                "enable": true
+            },
+            "sequencer-inbox-address": "0x512c22Be4d0bEC6A07cfA7B5ED63E612Ee8fE4D5"
+        },
+        "delayed-sequencer": {
+            "enable": false
+        },
+        "feed": {
+            "input": {
+                "url": [
+                    "wss://huddle01.calderachain.xyz/feed"
+                ]
+            },
+            "output": {
+                "enable": false,
+                "port": 9642
+            }
+        },
+        "parent-chain-reader": {
+            "poll-interval": "60s",
+            "poll-only": true
+        },
+        "sequencer": "false",
+        "staker": {
+            "enable": false
+        },
+        "espresso": {
+            "batch-poster": {
+                "hotshot-url": "https://cache.main.net.espresso.network/",
+                "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
+                "attestation-service-url": "http://arb-verifier.mainnets.espresso.private:8080",
+                "tee-type": "NITRO",
+                "address-valid-ranges": [
+                    {
+                        "address": "0x09F113077AF871b7527a440AfC6B0a364338e42e",
+                        "from": 1,
+                        "to": 9234811370
+                    }
+                ],
+                "txns-resubmission-interval": "10s",
+                "txns-monitoring-interval": "1s",
+                "hotshot-first-posting-block": 450742925,
+                "resubmit-espresso-tx-deadline": "2m"
+            },
+            "streamer": {
+                "address-monitor-start-l1": 450742925,
+                "address-monitor-step": 10000,
+                "hotshot-block": 12901033,
+                "txns-polling-interval": "250ms"
+            }
+        }
+    },
+    "parent-chain": {
+        "connection": {
+            "url": "http://erpc.mainnets.espresso.private:4000/main/evm/42161"
+        }
+    },
+    "persistent": {
+        "chain": "local"
+    },
+    "ws": {
+        "addr": "0.0.0.0",
+        "api": [
+            "eth",
+            "net",
+            "web3",
+            "arb",
+            "debug",
+            "txpool"
+        ],
+        "port": 8546
+    }
+}

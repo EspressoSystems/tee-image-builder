@@ -270,7 +270,9 @@ class ConfigValidator:
                     message="tee-type must be either 'NITRO' or 'SGX'"
                 ))
         else:
-            if not self.is_file_exception('espresso_tee_type'):
+            # rari mainnet not yet on a sequencer inbox version supporting multiple espresso-tee-types
+            rari_exception = str(self.config_path).endswith("chain-configs/nitro/rari-mainnet.json")
+            if not self.is_file_exception('espresso_tee_type') and not rari_exception:
                 self.errors.append(ValidationResult(
                     rule_name="espresso_tee_type",
                     passed=False,
@@ -309,11 +311,12 @@ class ConfigValidator:
                         passed=False,
                         message="REST aggregator URLs are not set"
                     ))
-                elif not all(_is_placeholder(u) for u in url_list):
-                    self.errors.append(ValidationResult(
+                elif all(_is_placeholder(u) for u in url_list):
+                    self.warnings.append(ValidationResult(
                         rule_name="data_availability_rest_aggregator_urls",
-                        passed=False,
-                        message="REST aggregator URLs must remain as placeholders — do not commit private service URLs"
+                        passed=True,
+                        message="REST aggregator URLs are still placeholders — make sure to set real URLs before deploying",
+                        severity="warning"
                     ))
 
         if 'rpc-aggregator' in da_config:

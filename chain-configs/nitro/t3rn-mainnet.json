@@ -1,8 +1,7 @@
 {
     "chain": {
-        "id": "360",
-        "info-json": "[{\"chain-id\":360,\"parent-chain-id\":42161,\"chain-name\":\"molten\",\"chain-config\":{\"chainId\":360,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":true,\"InitialArbOSVersion\":11,\"InitialChainOwner\":\"0x37918579d1ef6e5e7d8af19375df53c60d790ef6\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0xE1d32C985825562edAa906fAC39295370Db72195\",\"inbox\":\"0x235000876bd58336C802B3546Fc0250f285fCc79\",\"sequencer-inbox\":\"0x0fFe9ACC296ddd4De5F616Aa482C99fA4b41A3E2\",\"rollup\":\"0x0f28D76Ec5c62b502625351726b4A3E3F54FF5F0\",\"validator-utils\":\"0x9e83136d4B3AD04C766591EA51712F9aEa3194C0\",\"validator-wallet-creator\":\"0x0cB25fa1Bb1b12Ef908c09FD2d3C34f16F455DB3\",\"deployed-at\":196643801}}]",
-        "name": "molten"
+        "info-json": "[{\"chain-id\":819,\"parent-chain-id\":42161,\"chain-name\":\"t3rn\",\"chain-config\":{\"chainId\":819,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":true,\"InitialArbOSVersion\":32,\"Celestia\":false,\"InitialChainOwner\":\"0x545fd1e640ff90e67a6f291aef65f65541be9998\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0x413F592C62AE254F8bE457Bc334fa6C8d4487B70\",\"inbox\":\"0xcd0E388bD2Bd648f55610D9F9Ee579Bfb207E0ca\",\"sequencer-inbox\":\"0x7a8b76483DB24860F4F61D0BFF73B567b50A432b\",\"rollup\":\"0xeEF81a75bB3Ca5e25adAE4a456Bc419B9B4b4C7D\",\"validator-utils\":\"0x777e92d35E7830011cF0C6Fa129cEa292B974696\",\"validator-wallet-creator\":\"0x395a56158C45CFeE2D879aD80E4B8950a350769A\",\"deployed-at\":325363867}}]",
+        "name": "t3rn"
     },
     "execution": {
         "caching": {
@@ -12,7 +11,7 @@
         "sequencer": {
             "enable": false,
             "max-block-speed": "250ms",
-            "max-tx-data-size": 85000
+            "max-tx-data-size": 75000
         }
     },
     "http": {
@@ -32,25 +31,17 @@
     "node": {
         "batch-poster": {
             "enable": true,
-            "max-delay": "240m0s",
-            "max-size": 1800000,
+            "l1-block-bound": "finalized",
+            "max-delay": "1h0m0s",
+            "max-empty-batch-delay": "15h0m0s",
+            "max-size": 80000,
             "parent-chain-wallet": {
-                "private-key": "PLACE_HOLDER"
+                "private-key": "PLACEHOLDER"
             },
             "poll-interval": "60s",
-            "reorg-resistance-margin": 0,
-            "wait-for-max-delay": false
+            "wait-for-max-delay": true
         },
-        "celestia-cfg": {
-            "enable": true,
-            "url": "PLACE_HOLDER"
-        },
-        "da-preference": [
-            "celestia",
-            "anytrust"
-        ],
         "dangerous": {
-            "disable-blob-reader": true,
             "no-sequencer-coordinator": false
         },
         "data-availability": {
@@ -58,50 +49,53 @@
             "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/42161",
             "rest-aggregator": {
                 "enable": true,
-                "urls": "http://molten.calderachain.xyz/rest-aggregator/"
+                "urls": "PLACEHOLDER"
             },
             "rpc-aggregator": {
                 "assumed-honest": 1,
-                "backends": "PLACE_HOLDER",
+                "backends": "PLACEHOLDER",
                 "enable": true
             },
-            "sequencer-inbox-address": "0x0fFe9ACC296ddd4De5F616Aa482C99fA4b41A3E2"
+            "sequencer-inbox-address": "0x7a8b76483DB24860F4F61D0BFF73B567b50A432b"
         },
         "delayed-sequencer": {
             "enable": false
         },
         "espresso": {
             "batch-poster": {
-                "hotshot-first-posting-block": 450000000,
                 "attestation-service-url": "http://arb-verifier.mainnets.espresso.private:8080",
+                "hotshot-first-posting-block": 447642115,
                 "hotshot-url": "https://cache.main.net.espresso.network/",
                 "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
                 "resubmit-espresso-tx-deadline": "2m",
                 "tee-type": "NITRO",
-                "txns-monitoring-interval": "1s",
+                "address-valid-ranges": [
+                    {
+                        "address": "0x5e8436e8d6B1e078b3a1874eb356B8E9465e7FdC",
+                        "from": 1,
+                        "to": 9234811370
+                    }
+                ],
+                "txns-monitoring-interval": "250ms",
                 "txns-resubmission-interval": "10s"
             },
             "streamer": {
-                "address-monitor-start-l1": 450000000,
-                "hotshot-block": 12776840,
-                "txns-polling-interval": "1s",
-                "address-monitor-step": 10000
+                "address-monitor-step": 10000,
+                "address-monitor-start-l1": 447642115,
+                "hotshot-block": 12210916,
+                "txns-polling-interval": "250ms"
             }
         },
         "feed": {
             "input": {
                 "url": [
-                    "wss://molten.calderachain.xyz/feed"
+                    "wss://t3rn.calderachain.xyz/feed"
                 ]
             },
             "output": {
                 "enable": false,
                 "port": 9642
             }
-        },
-        "parent-chain-reader": {
-            "poll-interval": "60s",
-            "poll-only": true
         },
         "seq-coordinator": {
             "enable": false,

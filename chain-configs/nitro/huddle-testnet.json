@@ -1,7 +1,7 @@
 {
     "chain": {
-        "info-json": "[{\"chain-id\":1918988905,\"parent-chain-id\":421614,\"chain-name\":\"rari-testnet\",\"chain-config\":{\"chainId\":1918988905,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":true,\"InitialArbOSVersion\":10,\"InitialChainOwner\":\"0x46c7cbced66dd5eb31e5a31fef689090d9db8d66\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0x55f0a866E9A5B59Eab0269D62d121BC0978a4346\",\"inbox\":\"0xb6534cB24b925b58dfD811a0090f24C7aD52cA78\",\"sequencer-inbox\":\"0xf0d96B3a783F04620D5CBbf2829E70CEe396403F\",\"rollup\":\"0x2EeDc7b995267aa1060587Ff2585690C204E7e5c\",\"validator-utils\":\"0x2dAb9011cf19573772F92dfa65c275d679ae9cc8\",\"validator-wallet-creator\":\"0xe911FadA3EE53dCCe71102b4570e68deBd760F89\",\"deployed-at\":1640371}}]",
-        "name": "rari-testnet"
+        "info-json": "[{\"chain-id\":2524852,\"parent-chain-id\":421614,\"chain-name\":\"huddle-testnet-bqea3\",\"chain-config\":{\"chainId\":2524852,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":true,\"InitialArbOSVersion\":20,\"EigenDA\":false,\"InitialChainOwner\":\"0xff9c934a6db0f09e72c967036d7ace3f18042dca\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0xd1aDF7ED01d7CbAB7E84AbcD13b858B32B0BfaeC\",\"inbox\":\"0x9240dcC709B3cE61e5EF9f710C700cFda5803c0B\",\"sequencer-inbox\":\"0x7D38b171aCC8a61f4092817a08a51D99cC85Ef74\",\"rollup\":\"0x48595Ca407A8BA54BB4e2d314e79A6fe8eA3bA7F\",\"validator-utils\":\"0xDaE6924DAFBefb0eb7Ae2B398958920dE61173F2\",\"validator-wallet-creator\":\"0x85Feb8fE05794c2384b848235942490a6610C64B\",\"deployed-at\":58296558}}]",
+        "name": "huddle-testnet-bqea3"
     },
     "parent-chain": {
         "connection": {
@@ -40,29 +40,31 @@
             "enable": false
         },
         "batch-poster": {
-            "max-size": 90000,
+            "max-size": 1000000,
             "enable": true,
             "poll-interval": "60s",
             "espresso-register-signer-config": {
-                "max-base-fee": 8000000000,
+                "max-base-fee": 18000000000,
                 "max-retries": 5
             },
             "parent-chain-wallet": {
                 "private-key": "PLACEHOLDER"
             },
             "hotshot-urls": [
+                "https://cache.decaf.testnet.espresso.network/",
                 "https://query.decaf.testnet.espresso.network/"
             ],
             "espresso-tee-type": "NITRO",
             "light-client-address": "0x08d16cb8243b3e172dddcdf1a1a5dacca1cd7098",
-            "espresso-txns-polling-interval": "250ms",
+            "espresso-txns-polling-interval": "125ms",
+            "hotshot-block": 5580935,
+            "hotshot-first-posting-block": 204340438,
+            "address-monitor-start-l1": 204340438,
+            "wait-for-max-delay": true,
             "max-delay": "1h0m0s",
             "max-empty-batch-delay": "10h0m0s",
-            "l1-block-bound": "finalized",
-            "resubmit-espresso-tx-deadline": "2m",
-            "hotshot-block": 5580935,
-            "hotshot-first-posting-block": 217622133,
-            "address-monitor-start-l1": 217622133
+            "l1-block-bound": "ignore",
+            "resubmit-espresso-tx-deadline": "2m"
         },
         "staker": {
             "enable": false
@@ -75,11 +77,11 @@
         },
         "data-availability": {
             "enable": true,
-            "sequencer-inbox-address": "0xf0d96B3a783F04620D5CBbf2829E70CEe396403F",
+            "sequencer-inbox-address": "0x7D38b171aCC8a61f4092817a08a51D99cC85Ef74",
             "parent-chain-node-url": "http://arbitrum.testnets.espresso.private:8545",
             "rest-aggregator": {
                 "enable": true,
-                "urls": "PLACEHOLDER"
+                "urls": "https://huddle-testnet.rpc.caldera.xyz/rest-aggregator"
             },
             "rpc-aggregator": {
                 "enable": true,
@@ -101,7 +103,7 @@
         "feed": {
             "input": {
                 "url": [
-                    "wss://rari-testnet.calderachain.xyz/feed"
+                    "wss://huddle-testnet.rpc.caldera.xyz/feed"
                 ]
             },
             "output": {

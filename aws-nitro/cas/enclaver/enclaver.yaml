@@ -1,0 +1,23 @@
+# aws-nitro/cas/enclaver/enclaver.yaml
+version: v1
+name: "cas"
+target: "enclaver-cas:latest"
+sources:
+  app: "cas-image:latest"
+defaults:
+  memory_mb: 4096
+  cpu_count: 2
+ingress:
+  # DA API — receives calldata and verification requests from the rollup node
+  - listen_port: 8000
+  # Sequencer broadcast relay — serves the outbound feed WebSocket to downstream clients
+  - listen_port: 9643
+egress:
+  # Permissive for the first deployment, matching the batch-poster pattern.
+  # Tighten in production by replacing the wildcards with explicit host:port
+  # entries for: AWS Secrets Manager / KMS / STS in your region, your Espresso
+  # query host, L1 WS endpoint, sequencer feed host, and AnyTrust endpoint.
+  allow:
+    - "*"
+    - "**"
+    - 0.0.0.0/0

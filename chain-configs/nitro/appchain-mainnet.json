@@ -1,8 +1,7 @@
 {
     "chain": {
-        "id": "360",
-        "info-json": "[{\"chain-id\":360,\"parent-chain-id\":42161,\"chain-name\":\"molten\",\"chain-config\":{\"chainId\":360,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":true,\"InitialArbOSVersion\":11,\"InitialChainOwner\":\"0x37918579d1ef6e5e7d8af19375df53c60d790ef6\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0xE1d32C985825562edAa906fAC39295370Db72195\",\"inbox\":\"0x235000876bd58336C802B3546Fc0250f285fCc79\",\"sequencer-inbox\":\"0x0fFe9ACC296ddd4De5F616Aa482C99fA4b41A3E2\",\"rollup\":\"0x0f28D76Ec5c62b502625351726b4A3E3F54FF5F0\",\"validator-utils\":\"0x9e83136d4B3AD04C766591EA51712F9aEa3194C0\",\"validator-wallet-creator\":\"0x0cB25fa1Bb1b12Ef908c09FD2d3C34f16F455DB3\",\"deployed-at\":196643801}}]",
-        "name": "molten"
+        "info-json": "[{\"chain-id\":466,\"parent-chain-id\":1,\"chain-name\":\"appchain\",\"chain-config\":{\"chainId\":466,\"homesteadBlock\":0,\"daoForkBlock\":null,\"daoForkSupport\":true,\"eip150Block\":0,\"eip150Hash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"clique\":{\"period\":0,\"epoch\":0},\"arbitrum\":{\"EnableArbOS\":true,\"AllowDebugPrecompiles\":false,\"DataAvailabilityCommittee\":true,\"InitialArbOSVersion\":32,\"EigenDA\":false,\"Celestia\":false,\"InitialChainOwner\":\"0x4fb280195d13e352ce8a9b9b0b41f3e3756066a4\",\"GenesisBlockNum\":0}},\"rollup\":{\"bridge\":\"0x19df42E085e2c3fC4497172E412057F54D9f013E\",\"inbox\":\"0x010aDE5d8F9DC340531140802438798C189c36E0\",\"sequencer-inbox\":\"0x8045B2aa6b823CbA8f99ef3D3404F711619d3473\",\"rollup\":\"0x28293c7855797B0441000EF144119727f3cBCA9B\",\"validator-utils\":\"0xA79305c7D5Ad6F8AF0292c863957a2488F13f0d1\",\"validator-wallet-creator\":\"0x6FB4500c12E1303aD174085FDEce0a097f578ED7\",\"deployed-at\":21145520}}]",
+        "name": "appchain"
     },
     "execution": {
         "caching": {
@@ -31,67 +30,70 @@
     },
     "node": {
         "batch-poster": {
+            "data-poster": {
+                "max-base-fee": 6500000000
+            },
             "enable": true,
-            "max-delay": "240m0s",
-            "max-size": 1800000,
+            "ignore-blob-price": true,
+            "max-delay": "5h0m0s",
+            "max-size": 650000,
             "parent-chain-wallet": {
-                "private-key": "PLACE_HOLDER"
+                "private-key": "PLACEHOLDER"
             },
             "poll-interval": "60s",
-            "reorg-resistance-margin": 0,
-            "wait-for-max-delay": false
+            "post-4844-blobs": false,
+            "wait-for-max-delay": true
         },
-        "celestia-cfg": {
-            "enable": true,
-            "url": "PLACE_HOLDER"
-        },
-        "da-preference": [
-            "celestia",
-            "anytrust"
-        ],
         "dangerous": {
             "disable-blob-reader": true,
-            "no-sequencer-coordinator": false
+            "no-sequencer-coordinator": true
         },
         "data-availability": {
             "enable": true,
-            "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/42161",
+            "parent-chain-node-url": "http://erpc.mainnets.espresso.private:4000/main/evm/1",
             "rest-aggregator": {
                 "enable": true,
-                "urls": "http://molten.calderachain.xyz/rest-aggregator/"
+                "urls": "PLACEHOLDER"
             },
             "rpc-aggregator": {
                 "assumed-honest": 1,
-                "backends": "PLACE_HOLDER",
+                "backends": "PLACEHOLDER",
                 "enable": true
             },
-            "sequencer-inbox-address": "0x0fFe9ACC296ddd4De5F616Aa482C99fA4b41A3E2"
+            "sequencer-inbox-address": "0x8045B2aa6b823CbA8f99ef3D3404F711619d3473"
         },
         "delayed-sequencer": {
             "enable": false
         },
         "espresso": {
             "batch-poster": {
-                "hotshot-first-posting-block": 450000000,
-                "attestation-service-url": "http://arb-verifier.mainnets.espresso.private:8080",
+                "attestation-service-url": "http://verifier.mainnets.espresso.private:8080",
+                "hotshot-first-posting-block": 24873043,
                 "hotshot-url": "https://cache.main.net.espresso.network/",
                 "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs",
                 "resubmit-espresso-tx-deadline": "2m",
                 "tee-type": "NITRO",
+                "address-valid-ranges": [
+                    {
+                        "address": "0xC5dD640885cE582464e2fCa7b169581417822e6C",
+                        "from": 1,
+                        "to": 9234811370
+                    }
+                ],
                 "txns-monitoring-interval": "1s",
                 "txns-resubmission-interval": "10s"
             },
             "streamer": {
-                "address-monitor-start-l1": 450000000,
-                "hotshot-block": 12776840,
-                "txns-polling-interval": "1s",
-                "address-monitor-step": 10000
+                "address-monitor-start-l1": 24886200,
+                "address-monitor-step": 10000,
+                "hotshot-block": 13259100,
+                "txns-polling-interval": "1s"
             }
         },
         "feed": {
             "input": {
                 "url": [
-                    "wss://molten.calderachain.xyz/feed"
+                    "wss://appchain.calderachain.xyz/feed"
                 ]
             },
             "output": {
@@ -121,11 +123,11 @@
     },
     "parent-chain": {
         "connection": {
-            "url": "http://erpc.mainnets.espresso.private:4000/main/evm/42161"
+            "url": "http://erpc.mainnets.espresso.private:4000/main/evm/1"
         }
     },
     "persistent": {
-        "chain": "local"
+        "chain": "local/appchain"
     },
     "ws": {
         "addr": "0.0.0.0",

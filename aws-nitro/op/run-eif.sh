@@ -30,7 +30,6 @@ echo "Committed params loaded from ${COMMITTED_PARAMS_FILE}"
 : ${L2_RPC_URL:?Error: L2_RPC_URL is required}
 : ${ROLLUP_RPC_URL:?Error: ROLLUP_RPC_URL is required}
 : ${ESPRESSO_URL1:?Error: ESPRESSO_URL1 is required}
-: ${OP_BATCHER_PRIVATE_KEY:?Error: OP_BATCHER_PRIVATE_KEY is required}
 : ${ESPRESSO_ATTESTATION_SERVICE_URL:?Error: ESPRESSO_ATTESTATION_SERVICE_URL is required}
 : ${EIGENDA_PROXY_URL:?Error: EIGENDA_PROXY_URL is required}
 
@@ -50,6 +49,17 @@ echo "Committed params loaded from ${COMMITTED_PARAMS_FILE}"
 : ${MAX_PENDING_TX:?Error: MAX_PENDING_TX is required}
 : ${RPC_ENABLE_ADMIN:?Error: RPC_ENABLE_ADMIN is required}
 
+# Authentication: either a remote signer (SIGNER_ENDPOINT + SIGNER_ADDRESS) or a
+# plaintext private key (OP_BATCHER_PRIVATE_KEY). Remote signer takes precedence
+# when both are set.
+if [ -n "${SIGNER_ENDPOINT:-}" ] || [ -n "${SIGNER_ADDRESS:-}" ]; then
+    : ${SIGNER_ENDPOINT:?Error: SIGNER_ENDPOINT is required when SIGNER_ADDRESS is set}
+    : ${SIGNER_ADDRESS:?Error: SIGNER_ADDRESS is required when SIGNER_ENDPOINT is set}
+elif [ -z "${OP_BATCHER_PRIVATE_KEY:-}" ]; then
+    echo "Error: set either SIGNER_ENDPOINT + SIGNER_ADDRESS (remote signer) or OP_BATCHER_PRIVATE_KEY (plaintext)" >&2
+    exit 1
+fi
+
 ESPRESSO_URL2="${ESPRESSO_URL2:-$ESPRESSO_URL1}"
 ENCLAVE_DEBUG="${ENCLAVE_DEBUG:-false}"
 
@@ -60,6 +70,11 @@ echo "Rollup RPC URL: $ROLLUP_RPC_URL"
 echo "Espresso URLs: $ESPRESSO_URL1, $ESPRESSO_URL2"
 echo "Attestation Service URL: $ESPRESSO_ATTESTATION_SERVICE_URL"
 echo "EigenDA Proxy URL: $EIGENDA_PROXY_URL"
+if [ -n "${SIGNER_ENDPOINT:-}" ]; then
+    echo "Auth: remote signer at $SIGNER_ENDPOINT (address $SIGNER_ADDRESS, tls=${SIGNER_TLS_ENABLED:-false})"
+else
+    echo "Auth: plaintext private key"
+fi
 echo "Light Client Address: $ESPRESSO_LIGHT_CLIENT_ADDR"
 echo "Compression Algo: $COMPRESSION_ALGO"
 echo "Max Channel Duration: $MAX_CHANNEL_DURATION"
@@ -91,7 +106,6 @@ send_batcher_args() {
         "--l1-eth-rpc=$L1_RPC_URL" \
         "--l2-eth-rpc=$L2_RPC_URL" \
         "--rollup-rpc=$ROLLUP_RPC_URL" \
-        "--private-key=$OP_BATCHER_PRIVATE_KEY" \
         "--espresso.enabled=true" \
         "--espresso.urls=$ESPRESSO_URL1" \
         "--espresso.urls=$ESPRESSO_URL2" \
@@ -115,6 +129,16 @@ send_batcher_args() {
         "--txmgr.min-tip-cap=$TXMGR_MIN_TIP_CAP" \
         "--max-pending-tx=$MAX_PENDING_TX" \
         "--rpc.enable-admin=$RPC_ENABLE_ADMIN"
+
+    # Auth flags: remote signer takes precedence over plaintext key.
+    if [ -n "${SIGNER_ENDPOINT:-}" ]; then
+        printf '%s\0' \
+            "--signer.endpoint=$SIGNER_ENDPOINT" \
+            "--signer.address=$SIGNER_ADDRESS" \
+            "--signer.tls.enabled=${SIGNER_TLS_ENABLED:-false}"
+    else
+        printf '%s\0' "--private-key=$OP_BATCHER_PRIVATE_KEY"
+    fi
 
     # Extra args — runtime tuning, new flags, anything not committed
     # Pass as space-separated flags, e.g. "--poll-interval=1s --num-confirmations=8"
