@@ -16,7 +16,10 @@
 #     - espresso_client.base_url
 #     - rollup.stack.feed.web_socket_url
 #     - rollup.stack.l1_ws_url
+#     - rollup.stack.l1_http_url
 #     - da_server.da_providers[].endpoint_url
+#     - streamer.starting_hotshot_height
+#     - is_fresh_deployment
 #
 ##############################################################################
 
@@ -96,7 +99,10 @@ jobs:
             .espresso_client.base_url,
             .rollup.stack.feed.web_socket_url,
             .rollup.stack.l1_ws_url,
-            .da_server.da_providers[].endpoint_url
+            .rollup.stack.l1_http_url,
+            .da_server.da_providers[].endpoint_url,
+            .streamer.starting_hotshot_height,
+            .is_fresh_deployment
           )' "${{ env.CONFIG_PATH }}" | sha256sum | cut -d' ' -f1)
           echo "CONFIG_HASH=${CONFIG_HASH}" >> $GITHUB_ENV
           echo "Config hash: ${CONFIG_HASH}"
