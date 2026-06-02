@@ -25,7 +25,7 @@ Both are pinned to their `sha256` digest at build time so re-runs always produce
 
 ### Automatically
 
-The workflow runs on every push and pull request to `main`, using the default tag `celo-integration-rebase-14.2`.
+The workflow runs on every push and pull request to `main`, using the default tag `celo-integration-rebase-17`.
 
 ### Manually
 

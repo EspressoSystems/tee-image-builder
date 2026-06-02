@@ -84,7 +84,7 @@ jobs:
 
       - name: Resolve tag and pull images
         run: |
-          RESOLVED_TAG="${{ github.event.inputs.tag || 'celo-integration-rebase-14.2' }}"
+          RESOLVED_TAG="${{ github.event.inputs.tag || 'celo-integration-rebase-17' }}"
           echo "RESOLVED_TAG=${RESOLVED_TAG}" >> $GITHUB_ENV
           echo "Using tag: ${RESOLVED_TAG}"
 
