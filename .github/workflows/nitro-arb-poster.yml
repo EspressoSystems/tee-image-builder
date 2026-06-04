@@ -18,7 +18,7 @@
 
 name: Build EIF Image (Arb)
 
-run-name: Build EIF Image (Arb) - ${{ inputs.chain || 'rari-testnet' }} @ ${{ inputs.nitro_node_image_path || 'integration' }}
+run-name: Build EIF Image (Arb) - ${{ inputs.chain || 'rari-mainnet' }} @ ${{ inputs.nitro_node_image_path || 'integration' }}
 
 on:
   push:
@@ -31,7 +31,7 @@ on:
     inputs:
       chain:
         description: >
-          Arbitrum chain to build, e.g. rari-testnet.
+          Arbitrum chain to build, e.g. rari-mainnet.
           Selects chain-configs/nitro/<chain>.json for config and hash computation.
         required: true
       nitro_node_image_path:
@@ -54,7 +54,7 @@ on:
 env:
   REGISTRY: ghcr.io
   EIF_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/aws-nitro-arb-poster
-  CHAIN: ${{ github.event.inputs.chain || 'rari-testnet' }}
+  CHAIN: ${{ github.event.inputs.chain || 'rari-mainnet' }}
 
 jobs:
   build-eif:
