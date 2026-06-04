@@ -14,11 +14,11 @@ Examples:
     python3 validate_config.py
 
     # Validate a specific chain by name
-    python3 validate_config.py rari-testnet
+    python3 validate_config.py rari-mainnet
     python3 validate_config.py apechain-testnet
 
     # Validate a specific file path
-    python3 validate_config.py chain-configs/nitro/rari-testnet.json
+    python3 validate_config.py chain-configs/nitro/rari-mainnet.json
 
 Exit Codes:
     0 - Validation passed (may have warnings)
@@ -372,7 +372,7 @@ def find_config_files(arg: Optional[str] = None) -> List[Path]:
         if path.exists() and path.is_file():
             return [path]
 
-        # Chain name lookup (e.g. "rari-testnet" → chain-configs/nitro/rari-testnet.json)
+        # Chain name lookup (e.g. "rari-mainnet" → chain-configs/nitro/rari-mainnet.json)
         if Path('chain-configs').exists():
             matches = list(Path('chain-configs').rglob(f'{arg}.json'))
             if matches:
