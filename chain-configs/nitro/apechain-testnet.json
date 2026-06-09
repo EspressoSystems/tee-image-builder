@@ -72,6 +72,13 @@
                 "hotshot-url": "https://cache.decaf.testnet.espresso.network/",
                 "resubmit-espresso-tx-deadline": "2m",
                 "tee-type": "NITRO",
+                "address-valid-ranges": [
+                    {
+                        "address": "0xBc823064B157a2Ec00920AB67Cafb1f63AdC7546",
+                        "from": 1,
+                        "to": 9234811370
+                    }
+                ],
                 "txns-monitoring-interval": "125ms",
                 "txns-resubmission-interval": "10s",
                 "hotshot-first-posting-block": "243303429",
