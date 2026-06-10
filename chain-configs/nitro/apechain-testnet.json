@@ -81,13 +81,13 @@
                 ],
                 "txns-monitoring-interval": "125ms",
                 "txns-resubmission-interval": "10s",
-                "hotshot-first-posting-block": "243303429",
+                "hotshot-first-posting-block": "275563695",
                 "key-pair-attestations-path": "/home/user/.arbitrum/key-pairs"
             },
             "streamer": {
                 "txns-polling-interval": "125ms",
-                "address-monitor-start-l1": "243303429",
-                "hotshot-block": "7021000",
+                "address-monitor-start-l1": "275563695",
+                "hotshot-block": "9608132",
                 "address-monitor-step": 2000
             }
         },
