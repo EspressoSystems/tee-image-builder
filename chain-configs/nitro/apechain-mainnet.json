@@ -105,13 +105,13 @@
                 ],
                 "txns-resubmission-interval": "10s",
                 "txns-monitoring-interval": "125ms",
-                "hotshot-first-posting-block": 438337025,
+                "hotshot-first-posting-block": 472134645,
                 "resubmit-espresso-tx-deadline": "2m"
             },
             "streamer": {
                 "txns-polling-interval": "125ms",
-                "hotshot-block": 11040000,
-                "address-monitor-start-l1": 438337025,
+                "hotshot-block": 16455336,
+                "address-monitor-start-l1": 472134645,
                 "address-monitor-step": 10000
             }
         }
