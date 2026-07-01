@@ -38,6 +38,14 @@ on:
           CAS chain to build, e.g. devnet.
           Selects chain-configs/cas/<chain>.json for config and hash computation.
         required: true
+      genesis:
+        type: string
+        description: >
+          Espresso network whose light-client genesis to bake in. Selects the
+          committed, auditable chain-configs/cas/genesis/<genesis>.json and merges
+          it into the chain config before hashing — so the genesis is part of PCR0
+          and anyone can reproduce/verify it.
+        default: decaf
       cas_image_path:
         type: string
         description: 'Full CAS service image path (e.g. ghcr.io/espressosystems/chain-adjacent-service:v1.2.3)'
@@ -90,11 +98,32 @@ jobs:
           echo "Using config: ${CONFIG_PATH}"
           echo "Enforce config: ${ENFORCE_CONFIG}"
 
+      - name: Bake light-client genesis into config
+        run: |
+          GENESIS_NAME="${{ github.event.inputs.genesis || 'decaf' }}"
+          GENESIS_PATH="chain-configs/cas/genesis/${GENESIS_NAME}.json"
+          if [ ! -s "$GENESIS_PATH" ]; then
+            echo "ERROR: genesis file $GENESIS_PATH not found"; exit 1
+          fi
+          # The light-client genesis is the same for every chain on a given Espresso
+          # network, so it lives as one committed, auditable file. Inject it into the
+          # chain config here (before hashing) so it is baked into the image — and thus
+          # PCR0 — and anyone can reproduce/verify the build from the committed inputs.
+          jq --slurpfile g "$GENESIS_PATH" \
+             '.espresso_client.light_client.genesis = $g[0]' \
+             "${{ env.CONFIG_PATH }}" > /tmp/config.merged
+          if [ "$(jq '.espresso_client.light_client.genesis.stake_table | length' /tmp/config.merged)" -eq 0 ]; then
+            echo "ERROR: merged genesis stake_table is empty — refusing to build"; exit 1
+          fi
+          mv /tmp/config.merged "${{ env.CONFIG_PATH }}"
+          echo "Baked genesis '$GENESIS_NAME' ($(jq '.espresso_client.light_client.genesis.stake_table | length' "${{ env.CONFIG_PATH }}") validators) into ${{ env.CONFIG_PATH }}"
+
       - name: Compute config hash
         run: |
           # Computed with jq over a canonicalized form. The excluded fields are
           # runtime-injected from AWS Secrets Manager and trusted via IAM rather
-          # than baked into PCR0.
+          # than baked into PCR0. The light-client genesis is NOT excluded — it is
+          # baked in (merged above) and measured into PCR0.
           CONFIG_HASH=$(jq -cS 'del(
             .espresso_client.base_url,
             .rollup.stack.feed.web_socket_url,
