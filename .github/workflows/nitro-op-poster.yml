@@ -37,10 +37,11 @@ on:
       tag:
         description: >
           Image tag from espressosystems/optimism-espresso-integration.
-          Can be a branch name, release tag, or commit SHA, e.g.:
-          light-client-env-to-enclave-sh  (branch)
-          v1.2.3                          (release)
-          fa0f50f2                        (commit SHA)
+          Must be a tag published by its docker CI, i.e. a branch name or
+          branch-<7-char short SHA>, e.g.:
+          celo-integration-rebase-17          (branch, latest build)
+          celo-integration-rebase-17-b812d21  (branch + short commit SHA, pinned)
+          Bare commit SHAs are NOT published as tags and will fail to pull.
         required: true
       cpu_count:
         description: >
