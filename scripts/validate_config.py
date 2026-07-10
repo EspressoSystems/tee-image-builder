@@ -14,11 +14,11 @@ Examples:
     python3 validate_config.py
 
     # Validate a specific chain by name
-    python3 validate_config.py rari-mainnet
+    python3 validate_config.py apechain-mainnet
     python3 validate_config.py apechain-testnet
 
     # Validate a specific file path
-    python3 validate_config.py chain-configs/nitro/rari-mainnet.json
+    python3 validate_config.py chain-configs/nitro/apechain-mainnet.json
 
 Exit Codes:
     0 - Validation passed (may have warnings)
@@ -270,9 +270,7 @@ class ConfigValidator:
                     message="tee-type must be either 'NITRO' or 'SGX'"
                 ))
         else:
-            # rari mainnet not yet on a sequencer inbox version supporting multiple espresso-tee-types
-            rari_exception = str(self.config_path).endswith("chain-configs/nitro/rari-mainnet.json")
-            if not self.is_file_exception('espresso_tee_type') and not rari_exception:
+            if not self.is_file_exception('espresso_tee_type'):
                 self.errors.append(ValidationResult(
                     rule_name="espresso_tee_type",
                     passed=False,
@@ -372,7 +370,7 @@ def find_config_files(arg: Optional[str] = None) -> List[Path]:
         if path.exists() and path.is_file():
             return [path]
 
-        # Chain name lookup (e.g. "rari-mainnet" → chain-configs/nitro/rari-mainnet.json)
+        # Chain name lookup (e.g. "apechain-mainnet" → chain-configs/nitro/apechain-mainnet.json)
         if Path('chain-configs').exists():
             matches = list(Path('chain-configs').rglob(f'{arg}.json'))
             if matches:
