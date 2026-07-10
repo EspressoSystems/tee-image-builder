@@ -255,19 +255,19 @@ class ConfigValidator:
 
         if 'espresso-tee-type' in bp_config:
             tee_type = bp_config['espresso-tee-type']
-            if tee_type not in ['NITRO', 'SGX']:
+            if tee_type != 'NITRO':
                 self.errors.append(ValidationResult(
                     rule_name="espresso_tee_type",
                     passed=False,
-                    message="espresso-tee-type must be either 'NITRO' or 'SGX'"
+                    message="espresso-tee-type must be 'NITRO'"
                 ))
         elif 'tee-type' in espresso_bp_config:
             tee_type = espresso_bp_config['tee-type']
-            if tee_type not in ['NITRO', 'SGX']:
+            if tee_type != 'NITRO':
                 self.errors.append(ValidationResult(
                     rule_name="espresso_tee_type",
                     passed=False,
-                    message="tee-type must be either 'NITRO' or 'SGX'"
+                    message="tee-type must be 'NITRO'"
                 ))
         else:
             if not self.is_file_exception('espresso_tee_type'):
