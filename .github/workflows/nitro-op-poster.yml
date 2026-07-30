@@ -169,7 +169,7 @@ jobs:
             EXTRA_ARGS="${EXTRA_ARGS} --cpu-count ${{ github.event.inputs.cpu_count }}"
           fi
           if [ -n "${{ github.event.inputs.memory_mb }}" ]; then
-            EXTRA_ARGS="${EXTRA_ARGS} --memory-m ${{ github.event.inputs.memory_mb }}"
+            EXTRA_ARGS="${EXTRA_ARGS} --memory-mb ${{ github.event.inputs.memory_mb }}"
           fi
 
           # Use the intermediate image (with committed params baked in) as the app image.
