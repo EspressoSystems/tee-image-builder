@@ -2,7 +2,8 @@
 # nitro-op-poster.yml
 #
 # Builds a self-contained AWS Nitro EIF runner image from a published
-# op-batcher-enclave-app image and pushes a single tag to the registry:
+# op-batcher-enclave-app image (pulled from a configurable source registry,
+# see the source_repo input) and pushes a single tag to the registry:
 #
 #   aws-nitro-op-poster:<chain>-<tag>  — self-contained runner (what Terraform/ECS deploys).
 #                         Built by wrapping op-batcher-enclave-app with
@@ -36,12 +37,23 @@ on:
         default: 'celo-devnet'
       tag:
         description: >
-          Image tag from espressosystems/optimism-espresso-integration.
+          Image tag in the source registry (see source_repo).
           Can be a branch name, release tag, or commit SHA, e.g.:
           light-client-env-to-enclave-sh  (branch)
           v1.2.3                          (release)
           fa0f50f2                        (commit SHA)
+          Slashes in branch names are replaced with dashes in image
+          tags, e.g. espresso/batcher -> espresso-batcher.
         required: true
+      source_repo:
+        description: >
+          Registry URL to pull the op-batcher images from. Both
+          op-batcher-enclave-app and op-batcher-tee must be published
+          there under the same tag, e.g.:
+          ghcr.io/espressosystems/optimism-espresso-integration (default)
+          ghcr.io/espressosystems/optimism
+        required: false
+        default: 'ghcr.io/espressosystems/optimism-espresso-integration'
       cpu_count:
         description: >
           Number of vCPUs to allocate to the enclave (e.g. 2).
@@ -55,7 +67,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  SOURCE_REPO: ghcr.io/espressosystems/optimism-espresso-integration
+  SOURCE_REPO: ${{ github.event.inputs.source_repo || 'ghcr.io/espressosystems/optimism-espresso-integration' }}
   EIF_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/aws-nitro-op-poster
   CHAIN: ${{ github.event.inputs.chain || 'celo-devnet' }}
 
@@ -73,7 +85,9 @@ jobs:
           ref: ${{ github.sha }}
 
       - name: Lowercase image names
-        run: echo "EIF_IMAGE_NAME=${EIF_IMAGE_NAME,,}" >> $GITHUB_ENV
+        run: |
+          echo "EIF_IMAGE_NAME=${EIF_IMAGE_NAME,,}" >> $GITHUB_ENV
+          echo "SOURCE_REPO=${SOURCE_REPO,,}" >> $GITHUB_ENV
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -253,6 +267,7 @@ jobs:
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
           echo "| **Chain** | \`${{ env.CHAIN }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Tag** | \`${{ env.RESOLVED_TAG }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Source repo** | \`${{ env.SOURCE_REPO }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Runner image** | \`${{ env.EIF_TAG }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **App image (pinned)** | \`${{ env.APP_IMAGE_PINNED }}\` |" >> $GITHUB_STEP_SUMMARY
           if [ -n "${{ github.event.inputs.cpu_count }}" ]; then
