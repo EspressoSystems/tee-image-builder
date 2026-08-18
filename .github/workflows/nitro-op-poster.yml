@@ -6,7 +6,8 @@
 # see the source_repo input) and pushes a single tag to the registry:
 #
 #   aws-nitro-op-poster:<chain>-<tag>  — self-contained runner (what Terraform/ECS deploys).
-#                         Built by wrapping op-batcher-enclave-app with
+#                         Built by wrapping <source_repo>/op-batcher-enclave-app:<tag>
+#                         (both configurable via workflow_dispatch inputs) with
 #                         enclaver (EIF + enclaver-run proxy), then layering
 #                         run-eif.sh on top as ENTRYPOINT.
 #
