@@ -163,7 +163,18 @@ fi
 # Start enclaver-run — reads /enclave/enclaver.yaml, starts the Nitro enclave
 # from /enclave/application.eif, and bridges TCP:8337/8338 → vsock:8337/8338.
 echo "Starting enclaver-run..."
-/usr/local/bin/enclaver-run &
+# Strip enclaver's "INFO  enclave  > " console-relay wrapper so op-batcher's JSON
+# logs reach stdout intact and stay `| json`-parseable in Loki/Datadog. enclaver
+# re-emits every enclave line via info!(target: "enclave") (enclaver src/utils.rs),
+# which wraps op-batcher's JSON in a tracing prefix. We unwrap it here on the host.
+# This runs in the outer image layered on top of the measured EIF, so PCR0 is
+# unaffected (no re-attestation). enclaver's own logs (target enclaver::*) and any
+# non-matching lines pass through untouched. The FIFO keeps enclaver-run as
+# $ENCLAVER_PID so the shutdown trap and exit-code propagation below still work.
+ENCLAVE_LOG_FIFO=$(mktemp -u)
+mkfifo "$ENCLAVE_LOG_FIFO"
+awk '{ sub(/^ *INFO +enclave +> */, ""); print; fflush() }' < "$ENCLAVE_LOG_FIFO" &
+/usr/local/bin/enclaver-run > "$ENCLAVE_LOG_FIFO" 2>&1 &
 ENCLAVER_PID=$!
 echo "enclaver-run started with PID: $ENCLAVER_PID"
 
