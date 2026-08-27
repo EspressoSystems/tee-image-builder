@@ -1,0 +1,52 @@
+{
+  "espresso_client": {
+    "base_url": "http://placeholder.invalid/"
+  },
+  "streamer": {
+    "starting_hotshot_height": 0
+  },
+  "rollup": {
+    "type": "nitro",
+    "namespace_id": 7036201,
+    "stack": {
+      "chain_id": 7036201,
+      "feed": {
+        "web_socket_url": "PLACEHOLDER",
+        "current_message_count": 0,
+        "client": {
+          "trusted_sequencer_addresses": [
+            "0x9A3F1c1ca78150c92a328CC19bEd7B9690B21e0A"
+          ]
+        },
+        "server": {
+          "ws_server": {
+            "port": 9643,
+            "enable_compression": true
+          }
+        }
+      },
+      "l1_http_url": "PLACEHOLDER",
+      "l1_ws_url": "PLACEHOLDER",
+      "sequencer_inbox_address": "0x03FE1db0c20C915fA31C5cFd3d0Ae308A8F13AC7"
+    }
+  },
+  "da_server": {
+    "listen_addr": "0.0.0.0:8000",
+    "da_providers": [
+      {
+        "name": "anytrust",
+        "endpoint_url": "PLACEHOLDER",
+        "is_anytrust": true
+      }
+    ]
+  },
+  "submitter": {
+    "max_in_flight": 1000
+  },
+  "key_manager": {
+    "tee_verifier_address": "0x7c3243ef3867B766b45b10fa9375BA39C8707525",
+    "attestation_verifier_url": "https://test-lucas-9178.rpc.dev.caldera.xyz/espresso-attestation-verifier-9760997289/",
+    "tee_type": "nitro"
+  },
+  "is_fresh_deployment": true
+}
