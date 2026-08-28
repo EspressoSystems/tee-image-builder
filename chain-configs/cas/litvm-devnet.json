@@ -45,7 +45,7 @@
   },
   "key_manager": {
     "tee_verifier_address": "0x7c3243ef3867B766b45b10fa9375BA39C8707525",
-    "attestation_verifier_url": "https://test-lucas-9178.rpc.dev.caldera.xyz/espresso-attestation-verifier-9760997289/",
+    "attestation_verifier_url": "https://outsourcing-allen-lang-api.trycloudflare.com/",
     "tee_type": "nitro"
   },
   "is_fresh_deployment": true
