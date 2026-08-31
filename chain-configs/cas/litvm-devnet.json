@@ -1,6 +1,15 @@
 {
   "espresso_client": {
-    "base_url": "http://placeholder.invalid/"
+    "base_url": "http://placeholder.invalid/",
+    "light_client": {
+      "decaf": true,
+      "num_stake_tables_in_memory": 4096,
+      "fallback_delay_ms": 300,
+      "fallback_query_urls": [
+        "https://query-0.decaf.testnet.espresso.network/",
+        "https://query-1.decaf.testnet.espresso.network/"
+      ]
+    }
   },
   "streamer": {
     "starting_hotshot_height": 0
@@ -45,7 +54,7 @@
   },
   "key_manager": {
     "tee_verifier_address": "0x7c3243ef3867B766b45b10fa9375BA39C8707525",
-    "attestation_verifier_url": "https://outsourcing-allen-lang-api.trycloudflare.com/",
+    "attestation_verifier_url": "https://test-lucas-9178.rpc.dev.caldera.xyz/espresso-attestation-verifier-9760997289/",
     "tee_type": "nitro"
   },
   "is_fresh_deployment": true
