@@ -103,8 +103,32 @@ jobs:
           echo "RESOLVED_TAG=${RESOLVED_TAG}" >> $GITHUB_ENV
           echo "Using tag: ${RESOLVED_TAG}"
 
-          APP_IMAGE="${{ env.SOURCE_REPO }}/op-batcher-enclave-app:${RESOLVED_TAG}"
-          TEE_IMAGE="${{ env.SOURCE_REPO }}/op-batcher-tee:${RESOLVED_TAG}"
+          # source_repo is a container registry path, not a web URL. Pasting
+          # https://github.com/<owner>/<repo> otherwise reaches `docker pull`
+          # as an invalid reference, whose "invalid reference format" says
+          # nothing about which input to fix. Normalise what is recoverable
+          # and reject the rest here, with a message naming the fix.
+          SRC="${SOURCE_REPO%/}"
+          SRC="${SRC#*://}"
+          case "$SRC" in
+            github.com/*)
+              echo "::error::source_repo is a GitHub repo URL, not a registry: '${SOURCE_REPO}'. Use the registry that publishes the images, e.g. ghcr.io/espressosystems/optimism."
+              exit 1 ;;
+          esac
+          # A registry host, then at least one path segment. Requiring a dot or
+          # port in the host also catches a bare owner/repo, which docker would
+          # silently resolve against Docker Hub.
+          if ! printf '%s' "$SRC" | grep -Eq '^[a-z0-9-]+(\.[a-z0-9-]+)+(:[0-9]+)?(/[a-z0-9._-]+)+$'; then
+            echo "::error::source_repo '${SOURCE_REPO}' is not a registry path, e.g. ghcr.io/espressosystems/optimism."
+            exit 1
+          fi
+          # Persist the normalised value so the run summary reports what was
+          # actually pulled, not what was typed.
+          echo "SOURCE_REPO=${SRC}" >> $GITHUB_ENV
+          echo "Using source repo: ${SRC}"
+
+          APP_IMAGE="${SRC}/op-batcher-enclave-app:${RESOLVED_TAG}"
+          TEE_IMAGE="${SRC}/op-batcher-tee:${RESOLVED_TAG}"
 
           docker pull "${APP_IMAGE}"
           docker pull "${TEE_IMAGE}"
