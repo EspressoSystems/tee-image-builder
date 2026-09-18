@@ -1,0 +1,61 @@
+{
+  "espresso_client": {
+    "base_url": "http://placeholder.invalid/",
+    "light_client": {
+      "decaf": true,
+      "num_stake_tables_in_memory": 4096,
+      "fallback_delay_ms": 300,
+      "fallback_query_urls": [
+        "https://query-0.decaf.testnet.espresso.network/",
+        "https://query-1.decaf.testnet.espresso.network/"
+      ]
+    }
+  },
+  "streamer": {
+    "starting_hotshot_height": 0
+  },
+  "rollup": {
+    "type": "nitro",
+    "namespace_id": 3313939,
+    "stack": {
+      "chain_id": 3313939,
+      "feed": {
+        "web_socket_url": "PLACEHOLDER",
+        "current_message_count": 0,
+        "client": {
+          "trusted_sequencer_addresses": [
+            "0x1d9C06084Beead703670Ed053671FB774Ea894b8"
+          ]
+        },
+        "server": {
+          "ws_server": {
+            "port": 9643,
+            "enable_compression": true
+          }
+        }
+      },
+      "l1_http_url": "PLACEHOLDER",
+      "l1_ws_url": "PLACEHOLDER",
+      "sequencer_inbox_address": "0x9Ed60B7875f0bbc8b47C31040d28f0E318ebdb4A"
+    }
+  },
+  "da_server": {
+    "listen_addr": "0.0.0.0:8000",
+    "da_providers": [
+      {
+        "name": "anytrust",
+        "endpoint_url": "PLACEHOLDER",
+        "is_anytrust": true
+      }
+    ]
+  },
+  "submitter": {
+    "max_in_flight": 1000
+  },
+  "key_manager": {
+    "tee_verifier_address": "0x9a1BbfD45De89b52De8cF3e50063334cc327fEba",
+    "attestation_verifier_url": "https://apechain-tnet.rpc.caldera.xyz/espresso-attestation-verifier-3259447380/",
+    "tee_type": "nitro"
+  },
+  "is_fresh_deployment": true
+}
