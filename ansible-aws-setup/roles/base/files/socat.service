@@ -1,0 +1,14 @@
+[Unit]
+Description=Socat Proxy Start Service
+After=network.target
+
+[Service]
+ExecStart=socat -d -d -b65536 VSOCK-LISTEN:8004,fork,keepalive,rcvbuf-late=16384,sndbuf-late=16384
+Restart=always
+User=root
+StandardOutput=journal
+StandardError=journal+console
+SyslogIdentifier=socat
+
+[Install]
+WantedBy=multi-user.target

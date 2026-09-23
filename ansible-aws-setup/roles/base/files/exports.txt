@@ -1,0 +1,2 @@
+/opt/nitro/arbitrum 127.0.0.1/8(rw,insecure,crossmnt,no_subtree_check,sync,all_squash,anonuid=1000,anongid=1000)
+/opt/nitro/config 127.0.0.1/8(ro,insecure,crossmnt,no_subtree_check,sync,all_squash,anonuid=1000,anongid=1000)

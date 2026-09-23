@@ -1,0 +1,217 @@
+---
+- name: Get architecture
+  shell: uname -m
+  register: architecture
+
+- name: Enable no password sudo
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^%wheel'
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+#
+# Install software
+#
+- name: Install standard utilities
+  dnf:
+    name: [
+      'aws-nitro-enclaves-cli',
+      'aws-nitro-enclaves-cli-devel',
+      'cargo',
+      'fail2ban',
+      'git',
+      'nano',
+      'nfs-utils',
+      'rsync',
+      'screen',
+      'socat',
+      'tmux',
+      'vim',
+      'zsh',
+    ]
+
+- name: Install docker-compose
+  get_url:
+    url : https://github.com/docker/compose/releases/download/v2.37.0/docker-compose-linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    mode: 'u+x,g+x'
+
+- name: Create /usr/lib/docker
+  ansible.builtin.file:
+    path: /usr/lib/docker
+    state: directory
+    owner: root
+    group: root
+    mode: '0775'
+
+- name: Create /usr/lib/docker/cli-plugins
+  ansible.builtin.file:
+    path: /usr/lib/docker/cli-plugins
+    state: directory
+    owner: root
+    group: root
+    mode: '0775'
+
+- name: Install docker-compose to plugins
+  get_url:
+    url : https://github.com/docker/compose/releases/download/v2.37.0/docker-compose-linux-x86_64
+    dest: /usr/lib/docker/cli-plugins/docker-compose
+    mode: 'u+x,g+x'
+
+- name: Create docker daemon.json
+  ansible.builtin.copy:
+    src: docker-daemon.json
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Download enclaver
+  ansible.builtin.unarchive:
+    src : https://github.com/enclaver-io/enclaver/releases/download/v0.5.0/enclaver-linux-x86_64-v0.5.0.tar.gz
+    dest: /tmp
+    list_files: true
+    include: enclaver-linux-x86_64-v0.5.0/enclaver
+    remote_src: yes
+    mode: 'u+x,g+x'
+
+- name: Copy file with owner and permissions
+  ansible.builtin.copy:
+    src: /tmp/enclaver-linux-x86_64-v0.5.0/enclaver
+    dest: /usr/local/bin/enclaver
+    remote_src: yes
+    owner: root
+    group: root
+    mode: '0755'
+
+#
+# Create Groups
+#
+- name: Ensure group "wheel" exists
+  ansible.builtin.group:
+    name: wheel
+    state: present
+- name: Ensure group "docker" exists
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+#
+# Install just
+#
+- name: Install "just" Rust package
+  community.general.cargo:
+    name: just
+    path: /usr/local
+
+#
+# Folders
+#
+- name: Create /opt/nitro
+  ansible.builtin.file:
+    path: /opt/nitro
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: '0775'
+
+- name: Create /opt/nitro/arbitrum
+  ansible.builtin.file:
+    path: /opt/nitro/arbitrum
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: '0775'
+
+- name: Create /opt/nitro/config
+  ansible.builtin.file:
+    path: /opt/nitro/config
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: '0775'
+
+#
+# Socat proxy
+#
+- name: Install my Service
+  ansible.builtin.copy:
+    src: socat.service
+    dest: /etc/systemd/system/socat.service
+    mode: '0644'
+
+- name: Configuring socat service
+  systemd:
+    name: socat.service
+    enabled: yes
+    state: started
+    daemon_reload: yes
+
+#
+# NFS
+#
+- name: Exports Configuration
+  ansible.builtin.copy:
+    src: exports.txt
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: '0644'
+  register: export_conf
+
+- name: restart nfs service
+  systemd:
+    name: nfs-server.service
+    state: restarted
+  when: export_conf.changed
+
+- name: Configuring nfs-server service
+  systemd:
+    name: nfs-server.service
+    enabled: yes
+    state: started
+    daemon_reload: yes
+
+#
+# Enclave
+#
+
+- name: Check that enclave-allocator.yaml exists
+  stat:
+    path: /etc/nitro_enclaves/allocator.yaml
+  register: allocator_result
+
+- name: Enclave Configuration
+  ansible.builtin.copy:
+    src: enclave-allocator.yaml
+    dest: /etc/nitro_enclaves/allocator.yaml
+    owner: root
+    group: root
+    mode: '0660'
+  register: enclave_conf
+  when: not allocator_result.stat.exists
+
+- name: restart service
+  systemd:
+    name: nitro-enclaves-allocator.service
+    state: restarted
+  when: enclave_conf.changed
+
+- name: Configuring nitro-enclaves-allocator service
+  systemd:
+    name: nitro-enclaves-allocator.service
+    enabled: yes
+    state: started
+
+#
+# Add config-varification.json into place
+#
+- name: Config verification file
+  ansible.builtin.copy:
+    src: config-verification.json
+    dest: /opt/nitro/config/config-verification.json
+    owner: ec2-user
+    group: ec2-user
+    mode: '0660'
