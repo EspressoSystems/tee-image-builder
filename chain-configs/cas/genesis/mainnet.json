@@ -1,6 +1,7 @@
 {
   "epoch_height": 40000,
   "first_epoch_with_dynamic_stake_table": 277,
+  "chain_id": 1,
   "stake_table": [
     {
       "stake_key": "BLS_VER_KEY~wKba-aYHkDAaK3IrvE3azjXWQi80Fr4C0-446Ib46y6R7Iz6Kd4uH9K9q6popw9OGf271A6vGxkQW2q5j2DyI5aLZn3BXsxjqBsRguIMJc-ZW0PTbaerc3bPcXYmcKUpzlPGJT2KYLuaI63CRPxfYvv-JyUMSoJWsHWCV6ZNGheW",
