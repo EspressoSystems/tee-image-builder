@@ -76,7 +76,7 @@ jobs:
   build-eif:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -284,6 +284,42 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: docker push "${{ env.EIF_TAG }}"
 
+      - name: Publish release metadata
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUNNER_IMAGE_PINNED=$(docker inspect --format '{{index .RepoDigests 0}}' "$EIF_TAG")
+          [[ "$RUNNER_IMAGE_PINNED" =~ @sha256:[0-9a-f]{64}$ ]]
+          RELEASE_TAG="${CHAIN}-${RESOLVED_TAG}"
+          BUILD_URL="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT:-1}"
+          ARTIFACT_DIR=$(mktemp -d)
+          trap 'rm -rf "$ARTIFACT_DIR"' EXIT
+
+          python3 scripts/op-config.py "chain-configs/op/${CHAIN}.yaml" committed-json > "$ARTIFACT_DIR/committed-params.json"
+          CONFIG_HASH=$(python3 scripts/op-config.py "chain-configs/op/${CHAIN}.yaml" committed-hash)
+          cp "chain-configs/op/${CHAIN}.yaml" "$ARTIFACT_DIR/chain-config.yaml"
+
+          jq -n \
+            --arg chain "$CHAIN" --arg tag "$RESOLVED_TAG" \
+            --arg runner "$EIF_TAG" --arg pinned "$RUNNER_IMAGE_PINNED" \
+            --arg source "$SOURCE_REPO" --arg app "$APP_IMAGE_PINNED" --arg tee "$TEE_IMAGE_PINNED" \
+            --arg pcr0 "$PCR0" --arg pcr1 "$PCR1" --arg pcr2 "$PCR2" \
+            --arg enclave_hash "$ENCLAVE_HASH" --arg config_hash "$CONFIG_HASH" \
+            --arg workflow "$BUILD_URL" --arg sha "$GITHUB_SHA" \
+            --arg config_url "${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}/committed-params.json" \
+            '{"tee-type": "AWS Nitro (OP)", chain: $chain, tag: $tag,
+              "runner-image": $runner, "runner-image-pinned": $pinned,
+              "source-repo": $source, "app-image-pinned": $app, "tee-image-pinned": $tee,
+              pcr0: $pcr0, pcr1: $pcr1, pcr2: $pcr2,
+              "enclave-hash": $enclave_hash, "config-hash": $config_hash,
+              "config-url": $config_url, "build-workflow": $workflow, "git-sha": $sha}' \
+            > "$ARTIFACT_DIR/measurements.json"
+
+          bash scripts/publish-nitro-release.sh "$RELEASE_TAG" \
+            "[Nitro/OP] ${CHAIN} @ ${RESOLVED_TAG}" "$ARTIFACT_DIR/measurements.json" \
+            "$ARTIFACT_DIR/committed-params.json" "$ARTIFACT_DIR/chain-config.yaml"
+
       - name: Summary
         run: |
           echo "## EIF Build Summary" >> $GITHUB_STEP_SUMMARY
@@ -316,3 +352,7 @@ jobs:
           echo "Pull and run \`${{ env.EIF_TAG }}\` — EIF is baked in." >> $GITHUB_STEP_SUMMARY
           echo "**Required secrets:** \`L1_RPC_URL\`, \`L2_RPC_URL\`, \`ROLLUP_RPC_URL\`, \`ESPRESSO_URL1\`, \`OP_BATCHER_PRIVATE_KEY\`, \`ESPRESSO_ATTESTATION_SERVICE_URL\`, \`EIGENDA_PROXY_URL\`." >> $GITHUB_STEP_SUMMARY
           echo "**Optional:** \`ESPRESSO_URL2\` (defaults to ESPRESSO_URL1), plus runtime tuning params — see \`config.runtime.*\` labels." >> $GITHUB_STEP_SUMMARY
+          if [ -n "${RELEASE_URL:-}" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Release: ${RELEASE_URL}" >> "$GITHUB_STEP_SUMMARY"
+          fi
