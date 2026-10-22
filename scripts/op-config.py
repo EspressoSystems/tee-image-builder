@@ -2,7 +2,7 @@
 """
 OP batcher config helper for the EIF build workflow.
 
-Reads chain-configs/op/<chain>.yaml and outputs one of three artifacts:
+Reads chain-configs/op/<chain>.yaml and outputs build and release artifacts:
 
   dockerfile-params  — Dockerfile that bakes EXPECTED_COMMITTED_PARAMS_SHA256
                        into the intermediate app image (affects PCR0).
@@ -11,6 +11,8 @@ Reads chain-configs/op/<chain>.yaml and outputs one of three artifacts:
   committed-json     — Canonical JSON of committed: section, baked into the
                        outer runner image as /committed-params.json.
                        run-eif.sh sends this to the enclave for hash validation.
+
+  committed-hash     — SHA256 of the canonical committed JSON (no newline).
 
   labels             — Dockerfile LABEL lines for config.committed.* and
                        config.runtime.* OCI labels on the outer runner image.
@@ -65,7 +67,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("config_path", help="Path to chain config YAML")
-    parser.add_argument("mode", choices=["dockerfile-params", "committed-json", "labels"])
+    parser.add_argument("mode", choices=["dockerfile-params", "committed-json", "committed-hash", "labels"])
     parser.add_argument("--app-image", help="App image reference (required for dockerfile-params)")
     args = parser.parse_args()
 
@@ -78,6 +80,8 @@ def main():
         mode_dockerfile_params(cfg, committed, args.app_image)
     elif args.mode == "committed-json":
         mode_committed_json(cfg, committed)
+    elif args.mode == "committed-hash":
+        print(committed_hash(committed))
     elif args.mode == "labels":
         mode_labels(cfg, committed)
 

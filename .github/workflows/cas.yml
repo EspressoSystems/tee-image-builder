@@ -247,40 +247,9 @@ jobs:
               "git-sha": $git_sha
             }' > /tmp/measurements.json
 
-          # Release notes generated from measurements.json
-          {
-            echo "## Chain: \`${{ env.CHAIN }}\`"
-            echo ""
-            echo "| | |"
-            echo "|---|---|"
-            jq -r '
-              "| **TEE type** | " + .["tee-type"] + " |",
-              "| **CAS image** | `" + .["cas-image"] + "` |",
-              "| **Runner image** | `" + .["runner-image"] + "` |",
-              "| **PCR0** | `" + .pcr0 + "` |",
-              "| **PCR1** | `" + .pcr1 + "` |",
-              "| **PCR2** | `" + .pcr2 + "` |",
-              "| **Enclave hash (keccak)** | `" + .["enclave-hash"] + "` |",
-              "| **Config hash** | `" + .["config-hash"] + "` |",
-              "| **Build workflow** | " + .["build-workflow"] + " |"
-            ' /tmp/measurements.json
-            echo ""
-            echo "### Assets"
-            echo "- \`committed-config.json\` — full public config with placeholders for private values"
-            echo "- \`measurements.json\` — machine-readable PCR values and hashes for programmatic verification"
-          } > /tmp/release-notes.md
-
-          gh release create "${RELEASE_TAG}" \
-            --title "[Nitro/CAS] ${{ env.CHAIN }} @ ${{ env.CAS_IMAGE_TAG }}" \
-            --notes-file /tmp/release-notes.md \
-            2>/dev/null || true
-          gh release edit "${RELEASE_TAG}" \
-            --title "[Nitro/CAS] ${{ env.CHAIN }} @ ${{ env.CAS_IMAGE_TAG }}" \
-            --notes-file /tmp/release-notes.md
-          gh release upload "${RELEASE_TAG}" \
-            "${{ env.CONFIG_PATH }}#committed-config.json" \
-            /tmp/measurements.json \
-            --clobber
+          bash scripts/publish-nitro-release.sh "$RELEASE_TAG" \
+            "[Nitro/CAS] ${{ env.CHAIN }} @ ${{ env.CAS_IMAGE_TAG }}" \
+            /tmp/measurements.json "${{ env.CONFIG_PATH }}#committed-config.json"
 
           # OCI labels. Embed key values and link to release for full details
           BUILDCTX=$(mktemp -d)
@@ -301,7 +270,7 @@ jobs:
             echo 'LABEL build.workflow.url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"'
           } > "$BUILDCTX/Dockerfile"
           docker build -t "${{ env.EIF_TAG }}" "$BUILDCTX"
-          rm -rf "$BUILDCTX" /tmp/release-notes.md /tmp/measurements.json
+          rm -rf "$BUILDCTX" /tmp/measurements.json
           docker push "${{ env.EIF_TAG }}"
 
       - name: Summary
