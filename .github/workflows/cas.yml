@@ -268,9 +268,10 @@ jobs:
               "git-sha": $git_sha
             }' > /tmp/measurements.json
 
+          cp "${{ env.CONFIG_PATH }}" /tmp/committed-config.json
           bash scripts/publish-nitro-release.sh "$RELEASE_TAG" \
             "[Nitro/CAS] ${{ env.CHAIN }} @ ${{ env.CAS_IMAGE_TAG }}" \
-            /tmp/measurements.json "${{ env.CONFIG_PATH }}#committed-config.json"
+            /tmp/measurements.json /tmp/committed-config.json
 
           # OCI labels. Embed key values and link to release for full details
           BUILDCTX=$(mktemp -d)
