@@ -1,0 +1,59 @@
+{
+  "espresso_client": {
+    "base_url": "http://placeholder.invalid/",
+    "light_client": {
+      "num_stake_tables_in_memory": 4096,
+      "fallback_delay_ms": 300,
+      "fallback_query_urls": [
+        "https://cache.main.net.espresso.network/"
+      ]
+    }
+  },
+  "streamer": {
+    "starting_hotshot_height": 0
+  },
+  "rollup": {
+    "type": "nitro",
+    "namespace_id": 466,
+    "stack": {
+      "chain_id": 466,
+      "feed": {
+        "web_socket_url": "PLACEHOLDER",
+        "current_message_count": 0,
+        "client": {
+          "trusted_sequencer_addresses": [
+            "0xC6B2D49D531b119a3B6c4528f35c6Eb044b91Ee1"
+          ]
+        },
+        "server": {
+          "ws_server": {
+            "port": 9643,
+            "enable_compression": true
+          }
+        }
+      },
+      "l1_http_url": "PLACEHOLDER",
+      "l1_ws_url": "PLACEHOLDER",
+      "sequencer_inbox_address": "0x8045B2aa6b823CbA8f99ef3D3404F711619d3473"
+    }
+  },
+  "da_server": {
+    "listen_addr": "0.0.0.0:8000",
+    "da_providers": [
+      {
+        "name": "anytrust",
+        "endpoint_url": "PLACEHOLDER",
+        "is_anytrust": true
+      }
+    ]
+  },
+  "submitter": {
+    "max_in_flight": 1000
+  },
+  "key_manager": {
+    "tee_verifier_address": "0x809375C1e76653De11AdDE7E7bB59885af89b896",
+    "attestation_verifier_url": "https://appchain.calderachain.xyz/espresso-attestation-verifier-8726992198/",
+    "tee_type": "nitro"
+  },
+  "is_fresh_deployment": true
+}
