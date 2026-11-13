@@ -30,7 +30,6 @@ runtime:     # Passed at deploy time; defaults shown
   # L2_RPC_URL: required
   # ROLLUP_RPC_URL: required
   # OP_BATCHER_PRIVATE_KEY: required (secret)
-  # ESPRESSO_URL1: required
-  # ESPRESSO_URL2: optional (defaults to ESPRESSO_URL1 at runtime)
+  # ESPRESSO_URL1: required (single query service URL)
   # ESPRESSO_ATTESTATION_SERVICE_URL: required
   # EIGENDA_PROXY_URL: required

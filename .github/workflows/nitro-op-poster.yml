@@ -351,7 +351,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Pull and run \`${{ env.EIF_TAG }}\` — EIF is baked in." >> $GITHUB_STEP_SUMMARY
           echo "**Required secrets:** \`L1_RPC_URL\`, \`L2_RPC_URL\`, \`ROLLUP_RPC_URL\`, \`ESPRESSO_URL1\`, \`OP_BATCHER_PRIVATE_KEY\`, \`ESPRESSO_ATTESTATION_SERVICE_URL\`, \`EIGENDA_PROXY_URL\`." >> $GITHUB_STEP_SUMMARY
-          echo "**Optional:** \`ESPRESSO_URL2\` (defaults to ESPRESSO_URL1), plus runtime tuning params — see \`config.runtime.*\` labels." >> $GITHUB_STEP_SUMMARY
+          echo "**Optional:** runtime tuning params — see \`config.runtime.*\` labels." >> $GITHUB_STEP_SUMMARY
           if [ -n "${RELEASE_URL:-}" ]; then
             echo "" >> "$GITHUB_STEP_SUMMARY"
             echo "Release: ${RELEASE_URL}" >> "$GITHUB_STEP_SUMMARY"

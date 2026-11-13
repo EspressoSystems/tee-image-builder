@@ -44,14 +44,19 @@ elif [ -z "${OP_BATCHER_PRIVATE_KEY:-}" ]; then
     exit 1
 fi
 
-ESPRESSO_URL2="${ESPRESSO_URL2:-$ESPRESSO_URL1}"
+# op-batcher takes a single Espresso query service URL
+# (--espresso.query-service-url, celo-org/optimism#566). ESPRESSO_URL2 is no
+# longer used: put a load balancer behind ESPRESSO_URL1 for failover.
+if [ -n "${ESPRESSO_URL2:-}" ] && [ "$ESPRESSO_URL2" != "$ESPRESSO_URL1" ]; then
+    echo "WARNING: ESPRESSO_URL2 is ignored; op-batcher takes a single Espresso query service URL (ESPRESSO_URL1)" >&2
+fi
 ENCLAVE_DEBUG="${ENCLAVE_DEBUG:-false}"
 
 echo "=== Enclave Batcher Configuration ==="
 echo "L1 RPC URL: $L1_RPC_URL"
 echo "L2 RPC URL: $L2_RPC_URL"
 echo "Rollup RPC URL: $ROLLUP_RPC_URL"
-echo "Espresso URLs: $ESPRESSO_URL1, $ESPRESSO_URL2"
+echo "Espresso query service URL: $ESPRESSO_URL1"
 echo "Attestation Service URL: $ESPRESSO_ATTESTATION_SERVICE_URL"
 echo "EigenDA Proxy URL: $EIGENDA_PROXY_URL"
 if [ -n "${SIGNER_ENDPOINT:-}" ]; then
@@ -77,8 +82,7 @@ send_batcher_args() {
         "--l2-eth-rpc=$L2_RPC_URL" \
         "--rollup-rpc=$ROLLUP_RPC_URL" \
         "--espresso.enabled=true" \
-        "--espresso.urls=$ESPRESSO_URL1" \
-        "--espresso.urls=$ESPRESSO_URL2" \
+        "--espresso.query-service-url=$ESPRESSO_URL1" \
         "--espresso.espresso-attestation-service=$ESPRESSO_ATTESTATION_SERVICE_URL" \
         "--altda.enabled=true" \
         "--altda.da-server=$EIGENDA_PROXY_URL"
