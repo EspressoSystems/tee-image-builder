@@ -69,7 +69,7 @@ docker run --rm \
 | `L1_RPC_URL` | HTTP provider URL for L1 |
 | `L2_RPC_URL` | HTTP provider URL for L2 execution engine |
 | `ROLLUP_RPC_URL` | HTTP provider URL for the Rollup node |
-| `ESPRESSO_URL1` | Espresso query service URL |
+| `ESPRESSO_URL1` | Espresso query service URL, passed as `--espresso.query-service-url`. A single URL; use a load balancer for failover |
 | `OP_BATCHER_PRIVATE_KEY` | Batcher signing key |
 | `ESPRESSO_ATTESTATION_SERVICE_URL` | Espresso attestation service URL |
 | `EIGENDA_PROXY_URL` | EigenDA proxy URL (AltDA server) |
@@ -78,7 +78,6 @@ docker run --rm \
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `ESPRESSO_URL2` | `$ESPRESSO_URL1` | Second Espresso URL for redundancy |
 | `ESPRESSO_LIGHT_CLIENT_ADDR` | Decaf Sepolia default | Espresso light client contract address |
 | `DATA_AVAILABILITY_TYPE` | `auto` | DA type: `calldata`, `blobs`, or `auto` |
 | `COMPRESSION_ALGO` | `zlib` | Batch compression algorithm |
