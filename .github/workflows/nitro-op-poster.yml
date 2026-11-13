@@ -19,7 +19,7 @@
 
 name: Build EIF Image (OP)
 
-run-name: Build EIF Image (OP) - ${{ inputs.chain || 'celo-devnet' }} @ ${{ inputs.tag || 'default' }}
+run-name: Build EIF Image (OP) - ${{ inputs.chain || 'celo-testnet' }} @ ${{ inputs.tag || 'default' }}
 
 on:
   push:
@@ -32,10 +32,10 @@ on:
     inputs:
       chain:
         description: >
-          OP chain to build, e.g. celo-devnet.
+          OP chain to build, e.g. celo-testnet.
           Selects chain-configs/op/<chain>.yaml for committed and runtime config.
         required: false
-        default: 'celo-devnet'
+        default: 'celo-testnet'
       tag:
         description: >
           Image tag in the source registry (see source_repo).
@@ -70,11 +70,11 @@ env:
   REGISTRY: ghcr.io
   SOURCE_REPO: ${{ github.event.inputs.source_repo || 'ghcr.io/espressosystems/optimism-espresso-integration' }}
   EIF_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/aws-nitro-op-poster
-  CHAIN: ${{ github.event.inputs.chain || 'celo-devnet' }}
+  CHAIN: ${{ github.event.inputs.chain || 'celo-testnet' }}
 
 jobs:
   build-eif:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
       packages: write
