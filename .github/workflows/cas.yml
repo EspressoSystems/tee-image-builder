@@ -247,8 +247,9 @@ jobs:
               "git-sha": $git_sha
             }' > /tmp/measurements.json
 
+          CAS_DISPLAY_TAG=$(sed -E 's/^([[:xdigit:]]{12})[[:xdigit:]]{52}$/\1/' <<< "${{ env.CAS_IMAGE_TAG }}")
           bash scripts/publish-nitro-release.sh "$RELEASE_TAG" \
-            "[Nitro/CAS] ${{ env.CHAIN }} @ ${{ env.CAS_IMAGE_TAG }}" \
+            "[Nitro/CAS] ${{ env.CHAIN }} @ ${CAS_DISPLAY_TAG}" \
             /tmp/measurements.json "${{ env.CONFIG_PATH }}#committed-config.json"
 
           # OCI labels. Embed key values and link to release for full details
