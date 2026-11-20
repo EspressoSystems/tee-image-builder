@@ -1,0 +1,60 @@
+{
+  "espresso_client": {
+    "base_url": "http://placeholder.invalid/",
+    "light_client": {
+      "num_stake_tables_in_memory": 4096,
+      "fallback_delay_ms": 300,
+      "fallback_query_urls": [
+        "https://cache.main.net.espresso.network/"
+      ]
+    }
+  },
+  "streamer": {
+    "starting_hotshot_height": 0,
+    "max_full_queue_entries": 5000
+  },
+  "rollup": {
+    "type": "nitro",
+    "namespace_id": 33139,
+    "stack": {
+      "chain_id": 33139,
+      "feed": {
+        "web_socket_url": "PLACEHOLDER",
+        "current_message_count": 0,
+        "client": {
+          "trusted_sequencer_addresses": [
+            "PLACEHOLDER"
+          ]
+        },
+        "server": {
+          "ws_server": {
+            "port": 9643,
+            "enable_compression": true
+          }
+        }
+      },
+      "l1_http_url": "PLACEHOLDER",
+      "l1_ws_url": "PLACEHOLDER",
+      "sequencer_inbox_address": "0xE6a92Ae29E24C343eE66A2B3D3ECB783d65E4a3C"
+    }
+  },
+  "da_server": {
+    "listen_addr": "0.0.0.0:8000",
+    "da_providers": [
+      {
+        "name": "anytrust",
+        "endpoint_url": "PLACEHOLDER",
+        "is_anytrust": true
+      }
+    ]
+  },
+  "submitter": {
+    "max_in_flight": 1000
+  },
+  "key_manager": {
+    "tee_verifier_address": "PLACEHOLDER",
+    "attestation_verifier_url": "PLACEHOLDER",
+    "tee_type": "nitro"
+  },
+  "is_fresh_deployment": true
+}
