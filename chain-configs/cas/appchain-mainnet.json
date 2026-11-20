@@ -2,12 +2,10 @@
   "espresso_client": {
     "base_url": "http://placeholder.invalid/",
     "light_client": {
-      "decaf": true,
       "num_stake_tables_in_memory": 4096,
       "fallback_delay_ms": 300,
       "fallback_query_urls": [
-        "https://query-0.decaf.testnet.espresso.network/",
-        "https://query-1.decaf.testnet.espresso.network/"
+        "https://cache.main.net.espresso.network/"
       ]
     }
   },
@@ -16,15 +14,15 @@
   },
   "rollup": {
     "type": "nitro",
-    "namespace_id": 7036201,
+    "namespace_id": 466,
     "stack": {
-      "chain_id": 7036201,
+      "chain_id": 466,
       "feed": {
         "web_socket_url": "PLACEHOLDER",
         "current_message_count": 0,
         "client": {
           "trusted_sequencer_addresses": [
-            "0x9A3F1c1ca78150c92a328CC19bEd7B9690B21e0A"
+            "0xC6B2D49D531b119a3B6c4528f35c6Eb044b91Ee1"
           ]
         },
         "server": {
@@ -36,7 +34,7 @@
       },
       "l1_http_url": "PLACEHOLDER",
       "l1_ws_url": "PLACEHOLDER",
-      "sequencer_inbox_address": "0x03FE1db0c20C915fA31C5cFd3d0Ae308A8F13AC7"
+      "sequencer_inbox_address": "0x8045B2aa6b823CbA8f99ef3D3404F711619d3473"
     }
   },
   "da_server": {
@@ -53,8 +51,8 @@
     "max_in_flight": 1000
   },
   "key_manager": {
-    "tee_verifier_address": "0x7c3243ef3867B766b45b10fa9375BA39C8707525",
-    "attestation_verifier_url": "https://test-lucas-9178.rpc.dev.caldera.xyz/espresso-attestation-verifier-9760997289/",
+    "tee_verifier_address": "0x809375C1e76653De11AdDE7E7bB59885af89b896",
+    "attestation_verifier_url": "https://appchain.calderachain.xyz/espresso-attestation-verifier-8726992198/",
     "tee_type": "nitro"
   },
   "is_fresh_deployment": true
